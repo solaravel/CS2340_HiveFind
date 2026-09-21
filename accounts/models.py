@@ -16,5 +16,4 @@ class JobSeeker(models.Model):
     headline = models.TextField()
     skills = models.ManyToManyField(Skill, blank=True)
     education = models.TextField()
-    #will add more properties later
 
