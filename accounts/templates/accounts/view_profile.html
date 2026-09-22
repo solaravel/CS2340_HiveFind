@@ -1,0 +1,24 @@
+{% extends 'hivefind/base.html' %}
+
+{% block title %}{{ template_data.title }} &middot; HiveFind{% endblock %}
+
+{% block content %}
+<section class="profile">
+    <h1>{{ template_data.title }}</h1>
+    <p class="headline">{{ template_data.headline }}</p>
+
+    <h2>Education</h2>
+    <p>{{ template_data.education }}</p>
+
+    <h2>Skills</h2>
+    {% if template_data.skills %}
+        <ul class="skills">
+            {% for skill in template_data.skills %}
+                <li>{{ skill.name }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No skills listed.</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HiveFind{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <nav class="navbar">
+            <a class="brand" href="{% url 'home.index' %}">HiveFind</a>
+            <ul class="nav-links">
+                <li><a href="{% url 'home.index' %}">Home</a></li>
+                <li><a href="{% url 'jobs.map' %}">Job Map</a></li>
+                {% if user.is_authenticated %}
+                    <li class="nav-user">Hi, {{ user.username }}</li>
+                    <li>
+                        <form method="post" action="{% url 'accounts.logout' %}" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="link-button">Log out</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'accounts.login' %}">Log in</a></li>
+                    <li><a href="{% url 'accounts.signup' %}">Sign up</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="site-main">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="message {{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <p>HiveFind &middot; CS 2340 Team Project</p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

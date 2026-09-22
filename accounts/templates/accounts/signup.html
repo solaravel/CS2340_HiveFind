@@ -1,0 +1,15 @@
+{% extends 'hivefind/base.html' %}
+
+{% block title %}HiveFind &middot; Sign up{% endblock %}
+
+{% block content %}
+<section class="auth-form">
+    <h1>Create an account</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button">Sign up</button>
+    </form>
+    <p>Already have an account? <a href="{% url 'accounts.login' %}">Log in</a>.</p>
+</section>
+{% endblock %}

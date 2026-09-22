@@ -1,0 +1,125 @@
+.map-page h1 {
+    color: var(--gt-navy);
+    margin-bottom: 4px;
+}
+
+.map-intro {
+    color: var(--muted);
+    max-width: 640px;
+    margin-top: 0;
+}
+
+.map-layout {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.map-controls {
+    flex: 0 0 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.control-group {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.control-group h2 {
+    margin: 0 0 12px;
+    font-size: 1.05rem;
+    color: var(--gt-navy);
+}
+
+.control-group label {
+    display: block;
+    margin: 10px 0 4px;
+    font-size: 0.9rem;
+}
+
+.control-group input[type="number"] {
+    width: 100%;
+    padding: 7px 9px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.control-group input[type="range"] {
+    width: 100%;
+}
+
+.control-group .button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.checkbox-row input {
+    width: auto;
+    margin: 0;
+}
+
+.hint {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 12px 0 0;
+}
+
+.status {
+    margin: 12px 0 0;
+    font-size: 0.85rem;
+    color: var(--gt-navy);
+    background: #eef4fb;
+    border: 1px solid #cfe0f2;
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.job-count {
+    margin: 0;
+    font-weight: 600;
+    color: var(--gt-navy);
+}
+
+.map-canvas {
+    flex: 1;
+    min-height: 560px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    z-index: 0;
+}
+
+.user-pin {
+    color: #003057;
+    font-size: 22px;
+    text-align: center;
+    line-height: 24px;
+    text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+}
+
+.job-popup strong {
+    color: var(--gt-navy);
+}
+
+@media (max-width: 720px) {
+    .map-layout {
+        flex-direction: column;
+    }
+    .map-controls {
+        flex-basis: auto;
+    }
+    .map-canvas {
+        min-height: 420px;
+    }
+}
