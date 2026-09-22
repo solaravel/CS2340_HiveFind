@@ -1,0 +1,75 @@
+{% extends 'hivefind/base.html' %}
+{% load static %}
+
+{% block title %}HiveFind &middot; Job Map{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
+          referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="{% static 'css/jobs_map.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="map-page">
+    <h1>Jobs Near You</h1>
+    <p class="map-intro">
+        View open positions on the map, filter by how far you're willing to
+        travel, and save a preferred commute radius.
+    </p>
+
+    <div class="map-layout">
+        <aside class="map-controls" aria-label="Map filters">
+            <div class="control-group">
+                <h2>Your location</h2>
+                <button type="button" id="use-location" class="button">
+                    Use my current location
+                </button>
+                <p class="hint">Or enter it manually:</p>
+                <label>Latitude
+                    <input type="number" id="manual-lat" step="any" placeholder="33.7756">
+                </label>
+                <label>Longitude
+                    <input type="number" id="manual-lng" step="any" placeholder="-84.3963">
+                </label>
+                <button type="button" id="set-location" class="button button-secondary">
+                    Set location
+                </button>
+                <p class="status" id="location-status" role="status">
+                    Location not set &mdash; showing all jobs.
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h2>Distance filter</h2>
+                <label for="radius-slider">
+                    Show jobs within
+                    <strong><span id="radius-value">25</span> miles</strong>
+                </label>
+                <input type="range" id="radius-slider" min="1" max="100" value="25" step="1">
+                <label class="checkbox-row">
+                    <input type="checkbox" id="filter-enabled">
+                    Only show jobs within this distance
+                </label>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="remember-radius">
+                    Remember this as my commute radius
+                </label>
+            </div>
+
+            <div class="control-group">
+                <p class="job-count" id="job-count">Loading jobs&hellip;</p>
+            </div>
+        </aside>
+
+        <div id="map" class="map-canvas" role="application" aria-label="Map of job postings"></div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"
+            referrerpolicy="no-referrer"></script>
+    <script src="{% static 'js/jobs_map.js' %}"
+            data-jobs-url="{% url 'jobs.api' %}"></script>
+{% endblock %}

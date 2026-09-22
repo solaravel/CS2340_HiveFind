@@ -1,0 +1,21 @@
+{% extends 'hivefind/base.html' %}
+
+{% block title %}HiveFind &middot; Home{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1>Welcome to HiveFind</h1>
+    <p class="lead">
+        A platform connecting early-career job seekers with recruiters looking
+        for talent.
+    </p>
+    {% if user.is_authenticated %}
+        <p>You are signed in as <strong>{{ user.username }}</strong>.</p>
+    {% else %}
+        <p class="cta">
+            <a class="button" href="{% url 'accounts.signup' %}">Get started</a>
+            <a class="button button-secondary" href="{% url 'accounts.login' %}">Log in</a>
+        </p>
+    {% endif %}
+</section>
+{% endblock %}
