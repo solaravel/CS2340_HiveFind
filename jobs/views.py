@@ -11,3 +11,6 @@ def job_map(request):
 def jobs_api(request):
     jobs = Job.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
     return JsonResponse({'jobs': [job.as_dict() for job in jobs]})
+
+def job_search(request):
+    pass

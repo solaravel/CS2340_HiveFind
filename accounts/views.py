@@ -14,6 +14,7 @@ def signup(request):
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
+            profile = JobSeeker()
             auth_login(request, user)
             return redirect('home.index')
     else:
