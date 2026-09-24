@@ -7,5 +7,5 @@ class JobSeeker(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     headline = models.TextField()
-    skills = models.TextField()
-    education = models.TextField()
+    skills = models.TextField(default="")
+    education = models.TextField(default="")

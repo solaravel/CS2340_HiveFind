@@ -1,0 +1,46 @@
+{% extends 'hivefind/base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col-md-6 mx-auto mb-3">
+
+        <h2>{{ template_data.job.title }}</h2>
+        <hr />
+
+        <p><b>Description:</b> {{ template_data.job.description }}</p>
+        <p><b>Company:</b> {{ template_data.job.company }}</p>
+
+        <form method="post" action="{% url 'cart.add' id=template_data.job.id %}">
+
+          {% csrf_token %}
+
+          <div class="row">
+            <div class="col-auto">
+              <div class="input-group">
+                <div class="input-group-text">
+                  Quantity
+                </div>
+
+              </div>
+            </div>
+
+            <div class="col-auto">
+              <button
+                class="btn btn-dark"
+                type="submit">
+                Add to cart
+              </button>
+            </div>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
