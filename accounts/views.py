@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 
+from .forms import JobSeekerForm
 from .models import JobSeeker
 
 
@@ -45,29 +46,20 @@ def view_profile(request, id):
     template_data = {}
     template_data['title'] = profile.name
     template_data['headline'] = profile.headline
-    template_data['skills'] = profile.skills
+    template_data['skills'] = profile.skills.all()
     template_data['education'] = profile.education
     return render(request, 'accounts/view_profile.html', {'template_data': template_data})
 
+
 @login_required
-def edit_profile(request, id, profile_id):
-    profile = get_object_or_404(JobSeeker, id=profile_id)
-    if (request.user != profile.id):
-        return redirect('accounts.view_profile', id=id)
-    if request.method == 'GET':
-        template_data = {}
-        template_data['title'] = 'Edit Profile'
-        template_data['headline'] = profile.headline
-        template_data['skills'] = profile.skills.all()
-        template_data['education'] = profile.education
-        return render(request, 'accounts/edit_profile.html', {'template_data': template_data})
-    elif request.method == 'POST':
-        profile = JobSeeker.objects.get(id=profile_id)
-        profile.headline = request.POST['headline']
-        profile.skills = request.POST['skills']
-        profile.education = request.POST['education']
-        profile.save()
-        return redirect('accounts.view_profile', id=id)
-
-
+def edit_profile(request, id):
+    profile = get_object_or_404(JobSeeker, id=id)
+    if request.method == 'POST':
+        form = JobSeekerForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('accounts.view_profile', id=profile.id)
+    else:
+        form = JobSeekerForm(instance=profile)
+    return render(request, 'accounts/edit_profile.html', {'form': form, 'profile': profile})
 

@@ -1,1 +1,15 @@
 {% extends 'hivefind/base.html' %}
+
+{% block title %}Edit Profile &middot; HiveFind{% endblock %}
+
+{% block content %}
+<section class="auth-form">
+    <h1>Edit Profile</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button">Save changes</button>
+        <a href="{% url 'accounts.view_profile' id=profile.id %}">Cancel</a>
+    </form>
+</section>
+{% endblock %}
