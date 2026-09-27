@@ -238,3 +238,16 @@ body {
 .site-footer p {
     margin: 0;
 }
+
+#id_skills label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-weight: normal;
+}
+
+#id_skills input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}

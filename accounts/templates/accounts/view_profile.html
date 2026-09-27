@@ -4,6 +4,7 @@
 
 {% block content %}
 <section class="profile">
+
     <h1>{{ template_data.title }}</h1>
     <p class="headline">{{ template_data.headline }}</p>
 
@@ -20,5 +21,18 @@
     {% else %}
         <p>No skills listed.</p>
     {% endif %}
+
+    <h2>Work Experience</h2>
+    <p>{{ template_data.work_exp }}</p>
+
+    <h2>Links</h2>
+    {% if template_data.links %}
+        <p><a href="{{ template_data.links }}" target="_blank" rel="noopener noreferrer">{{ template_data.links }}</a></p>
+    {% else %}
+        <p>No links added.</p>
+    {% endif %}
+    <li>
+        <a href="{% url 'accounts.edit_profile' %}" class="button">Edit Profile</a>
+    </li>
 </section>
 {% endblock %}
