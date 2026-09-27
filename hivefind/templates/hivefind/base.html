@@ -17,6 +17,7 @@
                 <li><a href="{% url 'jobs.index' %}">Jobs</a></li>
                 <li><a href="{% url 'jobs.map' %}">Job Map</a></li>
                 {% if user.is_authenticated %}
+                    <li><a href="{% url 'accounts.my_profile' %}">My Profile</a></li>
                     <li class="nav-user">Hi, {{ user.username }}</li>
                     <li>
                         <form method="post" action="{% url 'accounts.logout' %}" class="logout-form">

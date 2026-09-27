@@ -23,3 +23,6 @@ def show(request, id):
     template_data['title'] = job.title
     template_data['job'] = job
     return render(request, 'jobs/show.html', {'template_data': template_data})
+
+def job_search(request):
+    pass
