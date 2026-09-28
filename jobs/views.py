@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 
 from .forms import JobForm
 from .models import Job
+from applications.models import Application
 
 
 def job_map(request):
@@ -74,3 +75,15 @@ def job_search(request):
     template_data['jobs'] = jobs.distinct()
     template_data['filters'] = request.GET
     return render(request, 'jobs/search.html', {'template_data': template_data})
+@login_required
+def create_application(request, id):
+    if request.method == 'POST' and request.POST['note'] != '':
+        job = Job.objects.get(id=id)
+        application = Application()
+        application.note = request.POST['note']
+        application.job = job
+        application.user = request.user
+        application.save()
+        return redirect('jobs.show', id=id)
+    else:
+        return redirect('jobs.show', id=id)
