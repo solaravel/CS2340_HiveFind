@@ -1,7 +1,9 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required, permission_required
 
+from .forms import JobForm
 from .models import Job
 
 
@@ -24,6 +26,21 @@ def show(request, id):
     template_data['title'] = job.title
     template_data['job'] = job
     return render(request, 'jobs/show.html', {'template_data': template_data})
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+def create(request):
+    if request.method == 'POST':
+        form = JobForm(request.POST)
+        if form.is_valid():
+            job = form.save(commit=False)
+            job.posted_by = request.user
+            job.save()
+            form.save_m2m()
+            return redirect('jobs.show', id=job.id)
+    else:
+        form = JobForm()
+    return render(request, 'jobs/create.html', {'form': form})
 
 def job_search(request):
     jobs = Job.objects.all()
