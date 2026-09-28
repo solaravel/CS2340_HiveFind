@@ -1,0 +1,83 @@
+{% extends 'hivefind/base.html' %}
+{% block content %}
+{% load static %}
+<div class="p-3">
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col mx-auto mb-3">
+        <h2>Search Jobs</h2>
+        <hr />
+      </div>
+    </div>
+
+    <form method="get" action="{% url 'jobs.search' %}">
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Title or company</label>
+          <input type="text" name="title" class="form-control" value="{{ template_data.filters.title }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Skill</label>
+          <input type="text" name="skill" class="form-control" value="{{ template_data.filters.skill }}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Location</label>
+          <input type="text" name="location" class="form-control" value="{{ template_data.filters.location }}">
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Min salary</label>
+          <input type="number" name="salary_min" class="form-control" value="{{ template_data.filters.salary_min }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Max salary</label>
+          <input type="number" name="salary_max" class="form-control" value="{{ template_data.filters.salary_max }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Type</label>
+          <select name="job_type" class="form-select">
+            <option value="">Any</option>
+            <option value="remote" {% if template_data.filters.job_type == 'remote' %}selected{% endif %}>Remote</option>
+            <option value="onsite" {% if template_data.filters.job_type == 'onsite' %}selected{% endif %}>On-site</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Visa sponsorship</label>
+          <select name="visa" class="form-select">
+            <option value="">Any</option>
+            <option value="yes" {% if template_data.filters.visa == 'yes' %}selected{% endif %}>Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-dark mb-3">Search</button>
+    </form>
+
+    <div class="row">
+      {% for job in template_data.jobs %}
+      <div class="col-md-4 col-lg-3 mb-2">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5 class="card-title">{{ job.title }}</h5>
+            <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
+            <p class="card-text">{{ job.city }}, {{ job.state }}</p>
+            <p class="card-text">{{ job.salary_display }}</p>
+            {% if job.is_remote %}<span class="badge bg-secondary">Remote</span>{% endif %}
+            {% if job.visa_sponsorship %}<span class="badge bg-secondary">Visa</span>{% endif %}
+            <div class="mt-2">
+              <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-dark">View Job</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col">
+        <p>No jobs match your search.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
