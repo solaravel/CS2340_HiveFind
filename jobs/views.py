@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.db.models import Q
 
 from .models import Job
 
@@ -25,4 +26,34 @@ def show(request, id):
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 def job_search(request):
-    pass
+    jobs = Job.objects.all()
+    title = request.GET.get('title', '')
+    skill = request.GET.get('skill', '')
+    location = request.GET.get('location', '')
+    salary_min = request.GET.get('salary_min', '')
+    salary_max = request.GET.get('salary_max', '')
+    job_type = request.GET.get('job_type', '')
+    visa = request.GET.get('visa', '')
+
+    if title:
+        jobs = jobs.filter(Q(title__icontains=title) | Q(company__icontains=title))
+    if skill:
+        jobs = jobs.filter(skills__name__icontains=skill)
+    if location:
+        jobs = jobs.filter(Q(city__icontains=location) | Q(state__icontains=location) | Q(address__icontains=location))
+    if salary_min:
+        jobs = jobs.filter(salary_max__gte=salary_min)
+    if salary_max:
+        jobs = jobs.filter(salary_min__lte=salary_max)
+    if job_type == 'remote':
+        jobs = jobs.filter(is_remote=True)
+    elif job_type == 'onsite':
+        jobs = jobs.filter(is_remote=False)
+    if visa == 'yes':
+        jobs = jobs.filter(visa_sponsorship=True)
+
+    template_data = {}
+    template_data['title'] = 'Search Jobs'
+    template_data['jobs'] = jobs.distinct()
+    template_data['filters'] = request.GET
+    return render(request, 'jobs/search.html', {'template_data': template_data})

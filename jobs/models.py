@@ -16,6 +16,8 @@ class Job(models.Model):
     salary_min = models.PositiveIntegerField(null=True, blank=True)
     salary_max = models.PositiveIntegerField(null=True, blank=True)
     is_remote = models.BooleanField(default=False)
+    visa_sponsorship = models.BooleanField(default=False)
+    skills = models.ManyToManyField('accounts.Skill', blank=True)
 
     posted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,

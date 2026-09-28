@@ -38,6 +38,13 @@
 
         </form>
 
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'applications.apply' id=template_data.job.id %}" class="mt-2">
+          {% csrf_token %}
+          <button class="btn btn-dark" type="submit">Apply</button>
+        </form>
+        {% endif %}
+
       </div>
     </div>
   </div>
