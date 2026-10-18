@@ -11,10 +11,7 @@ class JobAdmin(admin.ModelAdmin):
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ("id", "reason", "status", "reporter", "target_link", "created_at")
-    list_filter = ("status", "reason", "created_at")
-    search_fields = ("details", "reporter__username", "reported_user__username", "reported_posting__title")
-    # stopped here
-    @admin.display(description="Reported")
-    def target_link(self, obj):
-        pass
+    list_display = ("id", "reason", "status", "reporter", "reported_user", "created_at")
+    list_filter = ("status", "reason")
+    search_fields = ("details", "reporter__username", "reported_user__username")
+    readonly_fields = ("reporter", "reported_user", "reported_posting", "reason", "details", "created_at")
