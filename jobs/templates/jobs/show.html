@@ -64,6 +64,10 @@
           </div>
 
         </form>
+        {% if user.is_authenticated %}
+          <a href="{% url 'jobs.report_posting' template_data.job.id %}">Report this posting</a>
+        {% endif %}
+
 
         <!--{% if user.is_authenticated %}
         <form method="post" action="{% url 'applications.apply' id=template_data.job.id %}" class="mt-2">
