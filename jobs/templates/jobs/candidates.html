@@ -1,0 +1,46 @@
+{% extends 'hivefind/base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container">
+    <h2>Find Candidates</h2>
+    <form method="get" action="{% url 'jobs.candidates' %}" class="mb-3">
+      <div class="input-group">
+        <input type="text" name="query" value="{{ template_data.query }}" class="form-control" placeholder="Name, headline, or skill">
+        <button type="submit" class="btn btn-dark">Search</button>
+      </div>
+    </form>
+    {% if template_data.query %}
+    <form method="post" action="{% url 'jobs.candidates' %}" class="mb-4">
+      {% csrf_token %}
+      <input type="hidden" name="query" value="{{ template_data.query }}">
+      <button type="submit" class="btn btn-outline-dark">Save this search</button>
+    </form>
+    <div class="row">
+      {% for candidate in template_data.candidates %}
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          <div class="card-body">
+            <h5>{{ candidate.name|default:candidate.user.username }}</h5>
+            <p>{{ candidate.headline }}</p>
+            <p>{% for skill in candidate.skills.all %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            <a class="btn btn-dark" href="{% url 'accounts.view_profile' id=candidate.id %}">View Profile</a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p>No candidates match this search.</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <h3>Saved Searches</h3>
+    {% for search in template_data.saved_searches %}
+    <p><a href="{% url 'jobs.candidates' %}?query={{ search.query|urlencode }}">{{ search.query }}</a> — {{ search.matches|length }} match{{ search.matches|length|pluralize }}</p>
+    {% for candidate in search.matches %}
+    <p>{{ search.query }}: <a href="{% url 'accounts.view_profile' id=candidate.id %}">{{ candidate.name|default:candidate.user.username }}</a></p>
+    {% endfor %}
+    {% empty %}
+    <p>No saved searches.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}

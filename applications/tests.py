@@ -1,5 +1,8 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission
+from django.urls import reverse
+from accounts.models import JobSeeker
 from jobs.models import Job
 from .models import Application
 
@@ -17,3 +20,41 @@ class ApplicationTests(TestCase):
     def test_index_requires_login(self):
         response = self.client.get('/applications/')
         self.assertEqual(response.status_code, 302)
+
+    def test_recruiter_can_update_application_stage(self):
+        recruiter = User.objects.create_user('recruiter', password='pass1234')
+        recruiter.user_permissions.add(Permission.objects.get(codename='add_job'))
+        self.job.posted_by = recruiter
+        self.job.save()
+        application = Application.objects.create(user=self.user, job=self.job)
+        self.client.force_login(recruiter)
+
+        response = self.client.post(
+            reverse('applications.update_status', args=[application.id]),
+            {'status': 'interview'},
+        )
+
+        application.refresh_from_db()
+        self.assertRedirects(response, reverse('applications.pipeline'))
+        self.assertEqual(application.status, 'interview')
+
+    def test_recruiter_pipeline_only_shows_own_applicants(self):
+        recruiter = User.objects.create_user('recruiter', password='pass1234')
+        recruiter.user_permissions.add(Permission.objects.get(codename='add_job'))
+        self.job.posted_by = recruiter
+        self.job.save()
+        Application.objects.create(user=self.user, job=self.job)
+        self.client.force_login(recruiter)
+
+        response = self.client.get(reverse('applications.pipeline'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'tester')
+
+    def test_applicant_cannot_update_application_stage(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('applications.update_status', args=[1]),
+            {'status': 'interview'},
+        )
+        self.assertEqual(response.status_code, 403)

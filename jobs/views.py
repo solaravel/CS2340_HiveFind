@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from .forms import JobForm, ReportForm
 from .models import Job, Report
 from applications.models import Application
-from accounts.models import JobSeeker
+from accounts.models import JobSeeker, SavedCandidateSearch
 
 
 
@@ -25,6 +25,14 @@ def index(request):
     template_data = {}
     template_data['title'] = 'Jobs'
     template_data['jobs'] = Job.objects.filter(is_active=True)
+    template_data['recommendations'] = Job.objects.none()
+    if request.user.is_authenticated:
+        profile = JobSeeker.objects.filter(user=request.user).first()
+        if profile:
+            template_data['recommendations'] = Job.objects.filter(
+                is_active=True,
+                skills__in=profile.skills.all(),
+            ).exclude(applications__user=request.user).distinct()
     return render(request, 'jobs/index.html', {'template_data': template_data})
 def show(request, id):
     job = get_object_or_404(Job, id=id, is_active=True)
@@ -80,6 +88,35 @@ def job_search(request):
     template_data['jobs'] = jobs.distinct()
     template_data['filters'] = request.GET
     return render(request, 'jobs/search.html', {'template_data': template_data})
+
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+def candidate_search(request):
+    if request.method == 'POST':
+        query = request.POST.get('query', '').strip()
+        if query:
+            SavedCandidateSearch.objects.get_or_create(user=request.user, query=query)
+            messages.success(request, 'Candidate search saved.')
+            return redirect('jobs.candidates')
+        messages.error(request, 'Enter a search term to save a candidate search.')
+
+    query = request.GET.get('query', '').strip()
+    saved_searches = SavedCandidateSearch.objects.filter(user=request.user)
+    for search in saved_searches:
+        search.matches = candidates_matching(search.query)
+    template_data = {
+        'query': query,
+        'candidates': candidates_matching(query) if query else JobSeeker.objects.none(),
+        'saved_searches': saved_searches,
+    }
+    return render(request, 'jobs/candidates.html', {'template_data': template_data})
+
+
+def candidates_matching(query):
+    return JobSeeker.objects.filter(
+        Q(name__icontains=query) | Q(headline__icontains=query) | Q(skills__name__icontains=query)
+    ).distinct()
 @login_required
 def create_application(request, id):
     if request.method == 'POST' and request.POST['note'] != '':

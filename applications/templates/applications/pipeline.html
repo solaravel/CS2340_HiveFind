@@ -1,0 +1,36 @@
+{% extends 'hivefind/base.html' %}
+{% block content %}
+<div class="p-3">
+  <div class="container-fluid">
+    <h2>Applicant Pipeline</h2>
+    <div class="row g-3">
+      {% for stage in stages %}
+      <div class="col">
+        <div class="card h-100">
+          <div class="card-header">{{ stage.label }}</div>
+          <div class="card-body">
+            {% for application in stage.applications %}
+            <div class="border rounded p-2 mb-2">
+              <h6>{{ application.user.username }}</h6>
+              <p class="mb-2">{{ application.job.title }}</p>
+              <form method="post" action="{% url 'applications.update_status' id=application.id %}">
+                {% csrf_token %}
+                <select name="status" class="form-select form-select-sm mb-2">
+                  {% for stage_value, stage_label in stage.choices %}
+                  <option value="{{ stage_value }}" {% if application.status == stage_value %}selected{% endif %}>{{ stage_label }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm btn-dark">Move</button>
+              </form>
+            </div>
+            {% empty %}
+            <p>No applicants in this stage.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}
