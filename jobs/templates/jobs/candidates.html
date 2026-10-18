@@ -34,12 +34,15 @@
     {% endif %}
     <h3>Saved Searches</h3>
     {% for search in template_data.saved_searches %}
-    <p><a href="{% url 'jobs.candidates' %}?query={{ search.query|urlencode }}">{{ search.query }}</a> — {{ search.matches|length }} match{{ search.matches|length|pluralize }}</p>
-    {% for candidate in search.matches %}
-    <p>{{ search.query }}: <a href="{% url 'accounts.view_profile' id=candidate.id %}">{{ candidate.name|default:candidate.user.username }}</a></p>
-    {% endfor %}
+    <p><a href="{% url 'jobs.candidates' %}?query={{ search.query|urlencode }}">{{ search.query }}</a> — {{ search.match_count }} new match{{ search.match_count|pluralize }}</p>
     {% empty %}
     <p>No saved searches.</p>
+    {% endfor %}
+    <h3>New Matches</h3>
+    {% for notification in template_data.notifications %}
+    <p>{{ notification.search.query }}: <a href="{% url 'accounts.view_profile' id=notification.candidate.id %}">{{ notification.candidate.name|default:notification.candidate.user.username }}</a></p>
+    {% empty %}
+    <p>No new matches yet.</p>
     {% endfor %}
   </div>
 </div>

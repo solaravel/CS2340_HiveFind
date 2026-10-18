@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import Permission, User
-from accounts.models import JobSeeker, SavedCandidateSearch, Skill
+from accounts.models import CandidateMatchNotification, JobSeeker, SavedCandidateSearch, Skill
 
 from .models import Job
 
@@ -83,7 +83,7 @@ class JobMapTests(TestCase):
         self.assertContains(response, job.title)
         self.assertIn(job, response.context['template_data']['recommendations'])
 
-    def test_saved_candidate_search_shows_matching_candidates(self):
+    def test_saved_candidate_search_notifies_about_new_matches(self):
         recruiter = User.objects.create_user(username='recruiter', password='pass1234')
         recruiter.user_permissions.add(Permission.objects.get(codename='add_job'))
         self.client.force_login(recruiter)
@@ -94,6 +94,9 @@ class JobMapTests(TestCase):
 
         candidate.skills.add(Skill.objects.create(name='Python'))
 
+        self.assertTrue(
+            CandidateMatchNotification.objects.filter(search=search, candidate=candidate).exists()
+        )
         response = self.client.get(reverse('jobs.candidates'))
-        self.assertContains(response, search.query)
+        self.assertContains(response, 'New Matches')
         self.assertContains(response, 'Candidate')

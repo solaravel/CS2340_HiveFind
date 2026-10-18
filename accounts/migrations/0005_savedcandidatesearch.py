@@ -1,4 +1,5 @@
 from django.conf import settings
+import django.db.models.deletion
 from django.db import migrations, models
 
 
@@ -21,5 +22,21 @@ class Migration(migrations.Migration):
             options={
                 'ordering': ['-created_at'],
             },
+        ),
+        migrations.CreateModel(
+            name='CandidateMatchNotification',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('candidate', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='match_notifications', to='accounts.jobseeker')),
+                ('search', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to='accounts.savedcandidatesearch')),
+            ],
+            options={
+                'ordering': ['-created_at'],
+            },
+        ),
+        migrations.AddConstraint(
+            model_name='candidatematchnotification',
+            constraint=models.UniqueConstraint(fields=('search', 'candidate'), name='unique_candidate_search_match'),
         ),
     ]

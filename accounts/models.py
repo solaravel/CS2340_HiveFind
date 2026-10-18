@@ -30,3 +30,15 @@ class SavedCandidateSearch(models.Model):
 
     def __str__(self):
         return self.query
+
+
+class CandidateMatchNotification(models.Model):
+    search = models.ForeignKey(SavedCandidateSearch, on_delete=models.CASCADE, related_name='notifications')
+    candidate = models.ForeignKey(JobSeeker, on_delete=models.CASCADE, related_name='match_notifications')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(fields=['search', 'candidate'], name='unique_candidate_search_match'),
+        ]

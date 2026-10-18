@@ -4,11 +4,12 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.db.models import Count
 
 from .forms import JobForm, ReportForm
 from .models import Job, Report
 from applications.models import Application
-from accounts.models import JobSeeker, SavedCandidateSearch
+from accounts.models import CandidateMatchNotification, JobSeeker, SavedCandidateSearch
 
 
 
@@ -102,21 +103,22 @@ def candidate_search(request):
         messages.error(request, 'Enter a search term to save a candidate search.')
 
     query = request.GET.get('query', '').strip()
-    saved_searches = SavedCandidateSearch.objects.filter(user=request.user)
-    for search in saved_searches:
-        search.matches = candidates_matching(search.query)
+    candidates = JobSeeker.objects.none()
+    if query:
+        candidates = JobSeeker.objects.filter(
+            Q(name__icontains=query) | Q(headline__icontains=query) | Q(skills__name__icontains=query)
+        ).distinct()
     template_data = {
         'query': query,
-        'candidates': candidates_matching(query) if query else JobSeeker.objects.none(),
-        'saved_searches': saved_searches,
+        'candidates': candidates,
+        'saved_searches': SavedCandidateSearch.objects.filter(user=request.user).annotate(
+            match_count=Count('notifications')
+        ),
+        'notifications': CandidateMatchNotification.objects.filter(search__user=request.user).select_related(
+            'candidate', 'search'
+        ),
     }
     return render(request, 'jobs/candidates.html', {'template_data': template_data})
-
-
-def candidates_matching(query):
-    return JobSeeker.objects.filter(
-        Q(name__icontains=query) | Q(headline__icontains=query) | Q(skills__name__icontains=query)
-    ).distinct()
 @login_required
 def create_application(request, id):
     if request.method == 'POST' and request.POST['note'] != '':
