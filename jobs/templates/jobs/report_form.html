@@ -1,0 +1,15 @@
+{% extends "hivefind/base.html" %}
+
+{% block title %}Report Form &middot; HiveFind{% endblock %}
+
+{% block content %}
+<section class="auth-form">
+    <h1>Report: {{ target }}</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit report</button>
+        <a href="{% url 'jobs.index' %}">Cancel</a>
+    </form>
+</section>
+{% endblock %}

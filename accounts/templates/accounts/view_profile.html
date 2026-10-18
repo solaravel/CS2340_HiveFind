@@ -31,8 +31,13 @@
     {% else %}
         <p>No links added.</p>
     {% endif %}
-    <li>
-        <a href="{% url 'accounts.edit_profile' %}" class="button">Edit Profile</a>
-    </li>
+    {% if template_data.profile_user == user %}
+        <li>
+            <a href="{% url 'accounts.edit_profile' %}" class="button">Edit Profile</a>
+        </li>
+    {% endif %}
+    {% if user.is_authenticated and template_data.profile_user != user %}
+        <a href="{% url 'jobs.report_user' template_data.profile_user.id %}">Report this user</a>
+    {% endif %}
 </section>
 {% endblock %}

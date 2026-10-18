@@ -56,6 +56,7 @@ def view_profile(request, id):
     template_data['education'] = profile.education
     template_data['work_exp'] = profile.work_exp
     template_data['links'] = profile.links
+    template_data['profile_user'] = profile.user
     return render(request, 'accounts/view_profile.html', {'template_data': template_data})
 
 
