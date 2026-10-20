@@ -20,6 +20,8 @@
                 <li><a href="{% url 'jobs.map' %}">Job Map</a></li>
                 {% if perms.jobs.add_job %}
                     <li><a href="{% url 'jobs.create' %}">Post a Job</a></li>
+                    <li><a href="{% url 'applications.pipeline' %}">Applicant Pipeline</a></li>
+                    <li><a href="{% url 'jobs.candidates' %}">Find Candidates</a></li>
                 {% endif %}
                 {% if user.is_authenticated %}
                     <li><a href="{% url 'accounts.my_profile' %}">My Profile</a></li>

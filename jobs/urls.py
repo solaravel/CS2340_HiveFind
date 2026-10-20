@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.index, name='jobs.index'), ## jobs page that isnt map
     path('api/jobs/', views.jobs_api, name='jobs.api'),
     path('search/', views.job_search, name='jobs.search'),
+    path('candidates/', views.candidate_search, name='jobs.candidates'),
     path('<int:id>/', views.show, name='jobs.show'), ##pages for individual jobs
     path('<int:id>/application/create/', views.create_application, name='jobs.create_application'),
     path('report/posting/<int:id>/', views.report_posting, name='jobs.report_posting'),

@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import permission_required
+from django.contrib import messages
 from jobs.models import Job
 from .models import Application
 
@@ -21,3 +23,34 @@ def apply(request, id):
     job = get_object_or_404(Job, id=id)
     Application.objects.get_or_create(user=request.user, job=job)
     return redirect('applications.index')
+
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+def pipeline(request):
+    applications = Application.objects.filter(job__posted_by=request.user).select_related('user', 'job')
+    return render(request, 'applications/pipeline.html', {
+        'stages': [
+            {
+                'value': value,
+                'label': label,
+                'applications': applications.filter(status=value),
+                'choices': Application.STATUS_CHOICES,
+            }
+            for value, label in Application.STATUS_CHOICES
+        ],
+    })
+
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+@require_POST
+def update_status(request, id):
+    application = get_object_or_404(Application, id=id, job__posted_by=request.user)
+    status = request.POST.get('status')
+    if status not in dict(Application.STATUS_CHOICES):
+        messages.error(request, 'Choose a valid application stage.')
+    else:
+        application.status = status
+        application.save(update_fields=['status'])
+    return redirect('applications.pipeline')
