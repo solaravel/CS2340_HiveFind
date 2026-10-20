@@ -3,7 +3,8 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Q
+from django.core.exceptions import PermissionDenied #throws error if job seeker tries to access candidates page
 from .forms import JobSeekerForm
 from .models import JobSeeker, Skill
 
@@ -82,3 +83,27 @@ def edit_profile(request):
         form = JobSeekerForm(instance=profile)
     return render(request, 'accounts/edit_profile.html', {'form': form, 'profile': profile})
 
+@login_required
+def candidate_search(request):
+    if not request.user.groups.filter(name="Recruiters").exists():
+        raise PermissionDenied
+    name = request.GET.get('name', '')
+    skill = request.GET.get('skill', '')
+    education = request.GET.get('education', '')
+    experience = request.GET.get('experience', '')
+    candidates = JobSeeker.objects.filter(user__groups__name='Seeker')
+    if name:
+        candidates = candidates.filter(Q(name__icontains=name) | Q(headline_icontains=name))
+    if skill:
+        candidates = candidates.filter(skills__name__icontains=skill)
+    if education:
+        candidates = candidates.filter(education__icontains=education)
+    if experience:
+        candidates = candidates.filter(work_exp__icontains=experience)
+    template_data = {}
+    template_data['title'] = 'Search Candidates'
+    template_data['candidates'] = candidates.distinct().prefetch_related('skills')
+    template_data['filters'] = request.GET
+    return render(
+        request, 'accounts/search.html', {'template_data': template_data})
+        
