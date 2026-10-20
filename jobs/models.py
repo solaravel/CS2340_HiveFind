@@ -28,6 +28,7 @@ class Job(models.Model):
         related_name='jobs',
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -81,8 +82,6 @@ class Report(models.Model):
     status = models.CharField(max_length=20, choices=ReportStatus.choices, default=ReportStatus.OPEN)
 
     created_at = models.DateTimeField(auto_now_add=True)
-    reviewed_at = models.DateTimeField(null=True, blank=True)
-    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="reports_reviewed",)
 
 
     class Meta:

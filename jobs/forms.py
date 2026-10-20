@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Job
+from .models import Job, Report
 
 
 class JobForm(forms.ModelForm):
@@ -12,3 +12,8 @@ class JobForm(forms.ModelForm):
             'visa_sponsorship', 'skills',
         ]
         widgets = {'description': forms.Textarea(attrs={'rows': 5})}
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ["reason", "details"]

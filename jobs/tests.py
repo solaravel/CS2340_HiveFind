@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import Permission, User
+from accounts.models import CandidateMatchNotification, JobSeeker, SavedCandidateSearch, Skill
 
 from .models import Job
 
@@ -61,3 +62,41 @@ class JobMapTests(TestCase):
         job = Job.objects.get(title='Product Designer')
         self.assertRedirects(response, reverse('jobs.show', args=[job.id]))
         self.assertEqual(job.posted_by, user)
+
+    def test_jobs_page_recommends_matching_skills(self):
+        user = User.objects.create_user(username='applicant', password='pass1234')
+        profile = JobSeeker.objects.create(user=user, name='Applicant')
+        skill = Skill.objects.create(name='Python')
+        profile.skills.add(skill)
+        job = Job.objects.create(
+            title='Python Developer',
+            company='Acme',
+            latitude=33.7,
+            longitude=-84.3,
+        )
+        job.skills.add(skill)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('jobs.index'))
+
+        self.assertContains(response, 'Recommended for You')
+        self.assertContains(response, job.title)
+        self.assertIn(job, response.context['template_data']['recommendations'])
+
+    def test_saved_candidate_search_notifies_about_new_matches(self):
+        recruiter = User.objects.create_user(username='recruiter', password='pass1234')
+        recruiter.user_permissions.add(Permission.objects.get(codename='add_job'))
+        self.client.force_login(recruiter)
+        self.client.post(reverse('jobs.candidates'), {'query': 'Python'})
+        search = SavedCandidateSearch.objects.get(user=recruiter, query='Python')
+        candidate_user = User.objects.create_user(username='candidate', password='pass1234')
+        candidate = JobSeeker.objects.create(user=candidate_user, name='Candidate')
+
+        candidate.skills.add(Skill.objects.create(name='Python'))
+
+        self.assertTrue(
+            CandidateMatchNotification.objects.filter(search=search, candidate=candidate).exists()
+        )
+        response = self.client.get(reverse('jobs.candidates'))
+        self.assertContains(response, 'New Matches')
+        self.assertContains(response, 'Candidate')
