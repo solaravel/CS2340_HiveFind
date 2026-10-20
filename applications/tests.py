@@ -58,3 +58,20 @@ class ApplicationTests(TestCase):
             {'status': 'interview'},
         )
         self.assertEqual(response.status_code, 403)
+
+    def test_recruiter_can_view_candidate_and_application(self):
+        self.client.force_login(self.recruiter)
+        resp = self.client.get(reverse('applications.detail', args=[self.application.id]))
+        self.assertContains(resp, self.job_seeker.name)
+        self.assertContains(resp, self.job_seeker.education)
+        self.assertContains(resp, self.application.job.title)
+
+    def test_other_recruiter_gets_404(self):
+        self.client.force_login(self.other_recruiter)
+        resp = self.client.get(reverse('applications.detail', args=[self.application.id]))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_job_seeker_gets_403(self):
+        self.client.force_login(self.job_seeker.user)
+        resp = self.client.get(reverse('applications.detail', args=[self.application.id]))
+        self.assertEqual(resp.status_code, 403)

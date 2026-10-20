@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from jobs.models import Job
 from .models import Application
-
+from accounts.models import JobSeeker
 
 @login_required
 def index(request):
@@ -54,3 +54,16 @@ def update_status(request, id):
         application.status = status
         application.save(update_fields=['status'])
     return redirect('applications.pipeline')
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+def view_app(request, id):
+    application = get_object_or_404(Application.objects.select_related('user', 'job'), id=id, job__posted_by=request.user,)
+    candidate = (JobSeeker.objects.filter(user=application.user).prefetch_related('skills').first())
+    template_data = {}
+    template_data['title'] = f'{application.user.username} - {application.job.title}'
+    template_data['application'] = application
+    template_data['candidate'] = candidate
+    template_data['stages'] = Application.STATUS_CHOICES
+    template_data['note'] = application.note
+    return render(request, 'applications/view_app.html', {'template_data': template_data})

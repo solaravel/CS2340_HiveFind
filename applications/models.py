@@ -15,6 +15,7 @@ class Application(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='applications')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='applied')
     created_at = models.DateTimeField(auto_now_add=True)
+    note = models.TextField(blank=True)
 
     class Meta:
         ordering = ['-created_at']

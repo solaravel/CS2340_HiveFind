@@ -11,7 +11,11 @@
           <div class="card-body">
             {% for application in stage.applications %}
             <div class="border rounded p-2 mb-2">
-              <h6>{{ application.user.username }}</h6>
+              <h6>
+                <a href="{% url 'applications.view_app' id=application.id %}" class="text-decoration-none">
+                  {{ application.user.username }}
+                </a>
+              </h6>
               <p class="mb-2">{{ application.job.title }}</p>
               <form method="post" action="{% url 'applications.update_status' id=application.id %}">
                 {% csrf_token %}

@@ -1,0 +1,61 @@
+{% extends 'hivefind/base.html' %}
+{% block content %}
+<a href="{% url 'applications.pipeline' %}">&larr; Back to pipeline</a>
+
+<h1>{{ template_data.application.user.username }}</h1>
+<p>
+  Applied for <strong>{{ template_data.application.job.title }}</strong>
+  on {{ template_data.application.created_at|date:"M j, Y" }}
+</p>
+
+<div class="row">
+  <section class="col-md-7">
+    <h2>Candidate profile</h2>
+    {% if template_data.candidate %}
+      {% with c=template_data.candidate %}
+        <h3>{{ c.name }}</h3>
+        {% if c.headline %}<p>{{ c.headline }}</p>{% endif %}
+        <p>{{ template_data.application.user.email }}</p>
+
+        <h4>Skills</h4>
+        {% for skill in c.skills.all %}
+          <span class="badge bg-secondary">{{ skill.name }}</span>
+        {% empty %}
+          <p>No skills listed.</p>
+        {% endfor %}
+
+        <h4>Education</h4>
+        <p>{{ c.education|default:"Not provided."|linebreaksbr }}</p>
+
+        <h4>Work experience</h4>
+        <p>{{ c.work_exp|default:"Not provided."|linebreaksbr }}</p>
+
+        {% if c.links %}
+          <h4>Links</h4>
+          <p><a href="{{ c.links }}" target="_blank" rel="noopener noreferrer">{{ c.links }}</a></p>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      <p>This applicant hasn't completed a profile yet.</p>
+    {% endif %}
+  </section>
+
+  <aside class="col-md-5">
+    <h2>Application</h2>
+    <p><strong>Job:</strong> {{ template_data.application.job.title }}</p>
+    <p><strong>Note:</strong> {{ template_data.application.note }}</p>
+    <p><strong>Current stage:</strong> {{ template_data.application.get_status_display }}</p>
+
+    <form method="post" action="{% url 'applications.update_status' template_data.application.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="from" value="detail">
+      <select name="status">
+        {% for value, label in template_data.stages %}
+          <option value="{{ value }}" {% if value == template_data.application.status %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Update stage</button>
+    </form>
+  </aside>
+</div>
+{% endblock %}
