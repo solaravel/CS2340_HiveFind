@@ -28,21 +28,24 @@
     var radiusCircle = null;
 
     var map = L.map('map', { zoomControl: true }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-    // Colourful OpenStreetMap basemap (honey-tinted via CSS filter on the tile pane)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Colourful Esri street basemap (honey-tinted via CSS filter on the tile pane)
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
     }).addTo(map);
 
     // Honeycomb bee pin, built once and reused per marker
     function jobIcon() {
         return L.divIcon({
             className: 'hive-pin-wrap',
-            html: '<div class="hive-pin">' +
-                '<svg class="hive-pin-hex" viewBox="0 0 40 46" aria-hidden="true">' +
-                '<polygon points="20,1 38,11.5 38,34.5 20,45 2,34.5 2,11.5" ' +
-                'fill="#FFB300" stroke="#2B2015" stroke-width="3" stroke-linejoin="round"/></svg>' +
-                '<span class="hive-pin-ico">🐝</span></div>',
+            html: '<div class="hive-pin"><svg class="hive-pin-hex" viewBox="0 0 40 46" aria-hidden="true">' +
+                '<polygon points="20,1 38,11.5 38,34.5 20,45 2,34.5 2,11.5" fill="#FFB300" ' +
+                'stroke="#2B2015" stroke-width="3" stroke-linejoin="round"/>' +
+                '<ellipse cx="14.5" cy="17" rx="4.3" ry="5.6" fill="#FFF7E0" stroke="#2B2015" stroke-width="1.4"/>' +
+                '<ellipse cx="25.5" cy="17" rx="4.3" ry="5.6" fill="#FFF7E0" stroke="#2B2015" stroke-width="1.4"/>' +
+                '<ellipse cx="20" cy="26" rx="7.5" ry="6.5" fill="#2B2015"/>' +
+                '<rect x="14.25" y="22.2" width="11.5" height="2.3" rx="1" fill="#FFC107"/>' +
+                '<rect x="14.25" y="26.3" width="11.5" height="2.3" rx="1" fill="#FFC107"/></svg></div>',
             iconSize: [40, 46],
             iconAnchor: [20, 45],
             popupAnchor: [0, -42]
