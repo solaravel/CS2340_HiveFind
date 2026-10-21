@@ -1,6 +1,113 @@
 {% extends 'hivefind/base.html' %}
-{% block content %}
 {% load static %}
+
+{% block head %}
+<style>
+/* ===== Bee pack-opening reveal ===== */
+.pack-cta { margin-top: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pack-open-btn { animation: packPulse 1.8s ease-in-out infinite; }
+@keyframes packPulse {
+    0%,100% { transform: translateY(0); box-shadow: var(--shadow-sm); }
+    50% { transform: translateY(-3px); box-shadow: 6px 9px 0 var(--ink); }
+}
+.result-chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: var(--font-head); font-weight: 700;
+    padding: 7px 15px; border: 2px solid var(--ink);
+    border-radius: 999px; box-shadow: var(--shadow-sm);
+}
+.result-chip.accepted { background: var(--honey); color: var(--ink); }
+.result-chip.rejected { background: #FFE0B2; color: var(--ink-soft); }
+
+.pack-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; overflow: hidden;
+    background: radial-gradient(circle at 50% 42%, rgba(61,43,20,.82), rgba(18,12,5,.95));
+    backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+}
+.pack-overlay.show { display: flex; }
+.pack-stage { position: relative; width: min(92vw, 460px); text-align: center; }
+
+.pack-rays {
+    position: absolute; top: 50%; left: 50%;
+    width: 150vmax; height: 150vmax; margin: -75vmax 0 0 -75vmax;
+    background: repeating-conic-gradient(from 0deg,
+        rgba(255,193,7,.55) 0deg 7deg, rgba(255,143,0,0) 7deg 16deg);
+    -webkit-mask: radial-gradient(circle, transparent 90px, #000 160px, transparent 62%);
+    mask: radial-gradient(circle, transparent 90px, #000 160px, transparent 62%);
+    opacity: 0; pointer-events: none; z-index: 0;
+}
+
+.pack-box {
+    position: relative; width: 220px; height: 253px; margin: 0 auto;
+    z-index: 2; cursor: pointer; will-change: transform;
+    filter: drop-shadow(0 14px 26px rgba(0,0,0,.55));
+}
+.pack-box-inner { position: relative; width: 100%; height: 100%; }
+.pack-box.floating .pack-box-inner { animation: packFloat 1.6s ease-in-out infinite alternate; }
+@keyframes packFloat { from { transform: translateY(-6px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
+.pack-hex { width: 100%; height: 100%; display: block; }
+.pack-bee {
+    position: absolute; top: 50%; left: 50%; width: 96px;
+    transform: translate(-50%,-50%); z-index: 3;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
+    pointer-events: none;
+}
+.pack-hint {
+    margin-top: 20px; position: relative; z-index: 2;
+    color: var(--honey-light); font-family: var(--font-head);
+    font-weight: 600; font-size: 1.15rem;
+    animation: hintBob 1.6s ease-in-out infinite;
+}
+@keyframes hintBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+
+.pack-flash {
+    position: absolute; top: 50%; left: 50%; width: 10px; height: 10px;
+    margin: -5px; border-radius: 50%; background: #fff;
+    box-shadow: 0 0 60px 44px #fff, 0 0 130px 90px var(--honey-light);
+    opacity: 0; z-index: 4; pointer-events: none;
+}
+
+.pack-result {
+    position: relative; z-index: 5; display: none;
+    border: 4px solid var(--ink); border-radius: 22px; padding: 30px 24px;
+    box-shadow: 10px 10px 0 rgba(0,0,0,.45); will-change: transform;
+}
+.pack-result.show { display: block; }
+.pack-result .result-rarity {
+    display: inline-block; font-family: var(--font-head); font-weight: 700;
+    letter-spacing: 2px; font-size: .8rem; padding: 5px 15px;
+    border-radius: 999px; border: 2px solid var(--ink); margin-bottom: 10px;
+}
+.pack-result h2 { font-size: clamp(2rem, 8vw, 3rem); margin: 6px 0; }
+.pack-result .result-role { font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; margin: 2px 0; }
+.pack-result .result-msg { font-weight: 600; margin: 10px 0 0; }
+.pack-result .result-bee { width: 88px; margin-bottom: 2px; }
+.pack-result.accepted {
+    background: linear-gradient(160deg, #FFE082, #FFB300 68%, #FF8F00);
+    color: var(--ink);
+}
+.pack-result.accepted .result-rarity { background: var(--ink); color: var(--honey-light); }
+.pack-result.accepted h2 { text-shadow: 0 3px 0 rgba(255,255,255,.35); }
+.pack-result.rejected {
+    background: linear-gradient(160deg, #FFF3DD, #FFE0B2);
+    color: var(--ink-soft);
+}
+.pack-result.rejected .result-rarity { background: #e0b36a; color: var(--ink); }
+
+.pack-close { display: none; margin: 22px auto 0; position: relative; z-index: 6; }
+.pack-close.show { display: inline-block; }
+
+.pack-confetti-bit { position: absolute; z-index: 4; will-change: transform, opacity; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pack-open-btn, .pack-hint { animation: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
 <div class="page-header" data-reveal>
   <div class="page-header-ico"><i class="bi bi-list-check"></i></div>
   <div>
@@ -37,6 +144,18 @@
       {% if item.app.note %}
       <p class="app-note"><i class="bi bi-chat-left-quote-fill"></i> {{ item.app.note }}</p>
       {% endif %}
+
+      {% if item.outcome %}
+      <div class="pack-cta"
+           data-appid="{{ item.app.id }}"
+           data-outcome="{{ item.outcome }}"
+           data-title="{{ item.app.job.title }}"
+           data-company="{{ item.app.job.company }}">
+        <button type="button" class="button pack-open-btn">
+          <i class="bi bi-box2-heart-fill"></i> The hive decided &#8212; open your pack!
+        </button>
+      </div>
+      {% endif %}
     </div>
   </div>
   {% empty %}
@@ -47,4 +166,242 @@
   </div>
   {% endfor %}
 </div>
+
+<div class="pack-overlay" id="packOverlay" data-bee="{% static 'img/bee.svg' %}" aria-hidden="true">
+  <div class="pack-stage">
+    <div class="pack-rays"></div>
+    <div class="pack-flash"></div>
+    <div class="pack-box" id="packBox" role="button" tabindex="0" aria-label="Open your result">
+      <div class="pack-box-inner">
+        <svg class="pack-hex" viewBox="0 0 120 138" aria-hidden="true">
+          <defs>
+            <linearGradient id="packGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#FFE082"/>
+              <stop offset="0.55" stop-color="#FFB300"/>
+              <stop offset="1" stop-color="#FF8F00"/>
+            </linearGradient>
+          </defs>
+          <polygon points="60,5 113,35.5 113,102.5 60,133 7,102.5 7,35.5"
+                   fill="url(#packGrad)" stroke="#2B2015" stroke-width="6" stroke-linejoin="round"/>
+        </svg>
+        <img class="pack-bee" src="{% static 'img/bee.svg' %}" alt="">
+      </div>
+    </div>
+    <p class="pack-hint" id="packHint"><i class="bi bi-hand-index-fill"></i> Tap the hive to crack it open!</p>
+    <div class="pack-result" id="packResult"></div>
+    <button type="button" class="button pack-close" id="packClose">Sweet! <i class="bi bi-check-lg"></i></button>
+  </div>
+</div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+(function () {
+  'use strict';
+  var overlay = document.getElementById('packOverlay');
+  if (!overlay) { return; }
+  var box = document.getElementById('packBox');
+  var rays = overlay.querySelector('.pack-rays');
+  var flash = overlay.querySelector('.pack-flash');
+  var hint = document.getElementById('packHint');
+  var resultEl = document.getElementById('packResult');
+  var closeBtn = document.getElementById('packClose');
+  var stage = overlay.querySelector('.pack-stage');
+  var beeSrc = overlay.getAttribute('data-bee');
+  var hasAnime = typeof window.anime !== 'undefined';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var charging = false, raySpin = null;
+
+  function storeKey(id) { return 'hivefind.pack.' + id; }
+  function wasOpened(id) { try { return localStorage.getItem(storeKey(id)) === '1'; } catch (e) { return false; } }
+  function markOpened(id) { try { localStorage.setItem(storeKey(id), '1'); } catch (e) {} }
+
+  function makeChip(outcome) {
+    var span = document.createElement('span');
+    span.className = 'result-chip ' + outcome;
+    span.innerHTML = outcome === 'accepted'
+      ? '<i class="bi bi-trophy-fill"></i> Offer accepted'
+      : '<i class="bi bi-emoji-frown-fill"></i> Not selected';
+    return span;
+  }
+
+  function resultHtml(outcome, title, company) {
+    var role = company ? (title + ' &middot; ' + company) : title;
+    if (outcome === 'accepted') {
+      return '<div class="result-rarity">LEGENDARY OFFER</div>' +
+        '<img class="result-bee" src="' + beeSrc + '" alt="">' +
+        '<h2>OFFER UNLOCKED!</h2>' +
+        '<p class="result-role">' + role + '</p>' +
+        '<p class="result-msg">Welcome to the hive &#8212; they want you!</p>';
+    }
+    return '<div class="result-rarity">KEEP BUZZING</div>' +
+      '<img class="result-bee" src="' + beeSrc + '" alt="">' +
+      '<h2>Not this time</h2>' +
+      '<p class="result-role">' + role + '</p>' +
+      '<p class="result-msg">This flower didn’t bloom &#8212; the right one is out there.</p>';
+  }
+
+  function confetti(n, accepted) {
+    if (!hasAnime) { return; }
+    var colors = accepted
+      ? ['#FFB300', '#FFD54F', '#FF8F00', '#ffffff', '#7CB342']
+      : ['#FFE0B2', '#FFD54F', '#e0b36a', '#ffffff'];
+    for (var i = 0; i < n; i++) {
+      var bit = document.createElement('span');
+      bit.className = 'pack-confetti-bit';
+      if (Math.random() < 0.16) {
+        bit.innerHTML = '<img src="' + beeSrc + '" style="width:26px;display:block">';
+      } else {
+        var s = 8 + Math.random() * 10;
+        bit.style.width = s + 'px';
+        bit.style.height = (s * 0.6) + 'px';
+        bit.style.background = colors[Math.floor(Math.random() * colors.length)];
+        bit.style.borderRadius = '2px';
+      }
+      bit.style.left = '50%';
+      bit.style.top = '44%';
+      stage.appendChild(bit);
+      (function (node) {
+        var ang = Math.random() * Math.PI * 2;
+        var dist = 80 + Math.random() * 260;
+        anime({
+          targets: node,
+          translateX: Math.cos(ang) * dist,
+          translateY: [Math.sin(ang) * dist * 0.6, Math.sin(ang) * dist * 0.6 + 260 + Math.random() * 180],
+          rotate: Math.random() * 720 - 360,
+          scale: [1, 0.3],
+          opacity: [1, 1, 0],
+          duration: 1400 + Math.random() * 900,
+          easing: 'easeOutCubic',
+          complete: function () { node.remove(); }
+        });
+      })(bit);
+    }
+  }
+
+  function resetStage() {
+    if (raySpin) { raySpin.pause(); raySpin = null; }
+    if (hasAnime) { anime.remove([box, rays, flash, resultEl]); }
+    overlay.querySelectorAll('.pack-confetti-bit').forEach(function (b) { b.remove(); });
+    charging = false;
+    box.classList.remove('floating');
+    box.style.display = '';
+    box.style.opacity = '';
+    box.style.transform = '';
+    rays.style.opacity = 0;
+    flash.style.opacity = 0;
+    hint.style.display = '';
+    closeBtn.classList.remove('show');
+    resultEl.className = 'pack-result';
+    resultEl.innerHTML = '';
+  }
+
+  function openPack(outcome, title, company) {
+    resetStage();
+    overlay.classList.add('show');
+
+    if (!hasAnime || reduce) {
+      box.style.display = 'none';
+      hint.style.display = 'none';
+      resultEl.innerHTML = resultHtml(outcome, title, company);
+      resultEl.classList.add(outcome, 'show');
+      closeBtn.classList.add('show');
+      return;
+    }
+
+    anime({
+      targets: box, scale: [0, 1], rotate: [-18, 0], opacity: [0, 1],
+      duration: 500, easing: 'easeOutBack',
+      complete: function () { box.classList.add('floating'); }
+    });
+
+    function charge() {
+      if (charging) { return; }
+      charging = true;
+      hint.style.display = 'none';
+      box.classList.remove('floating');
+      anime.remove(box);
+      var accepted = outcome === 'accepted';
+
+      anime({ targets: rays, opacity: [0, 1], duration: 500 });
+      raySpin = anime({ targets: rays, rotate: '1turn', duration: 6000, loop: true, easing: 'linear' });
+
+      var tl = anime.timeline({ easing: 'easeOutQuad' });
+      tl.add({
+        targets: box,
+        keyframes: [
+          { rotate: -4, translateX: -4, duration: 70 },
+          { rotate: 4, translateX: 4, duration: 70 },
+          { rotate: -7, translateX: -7, duration: 60 },
+          { rotate: 7, translateX: 7, duration: 60 },
+          { rotate: -10, translateX: -9, scale: 1.06, duration: 52 },
+          { rotate: 10, translateX: 9, duration: 52 },
+          { rotate: -13, scale: 1.1, duration: 44 },
+          { rotate: 13, duration: 44 },
+          { rotate: 0, scale: 1.16, duration: 40 }
+        ],
+        loop: 3,
+        duration: 1500
+      });
+      tl.add({
+        targets: flash, opacity: [0, 1], scale: [0.2, 1], duration: 160, easing: 'easeOutQuad',
+        begin: function () { confetti(accepted ? 95 : 38, accepted); }
+      });
+      tl.add({
+        targets: box, scale: 1.55, opacity: 0, duration: 260, easing: 'easeInQuad',
+        complete: function () { box.style.display = 'none'; }
+      }, '-=130');
+      tl.add({ targets: flash, opacity: 0, duration: 320 });
+      tl.add({
+        targets: resultEl, scale: [0.3, 1], rotateY: [90, 0], opacity: [0, 1],
+        duration: 760, easing: 'easeOutElastic(1, .6)',
+        begin: function () {
+          resultEl.innerHTML = resultHtml(outcome, title, company);
+          resultEl.classList.add(outcome, 'show');
+        }
+      });
+      tl.add({
+        targets: closeBtn, opacity: [0, 1], duration: 300,
+        begin: function () { closeBtn.classList.add('show'); }
+      });
+      if (accepted) {
+        tl.add({ duration: 420, complete: function () { confetti(42, true); } });
+      }
+    }
+
+    box.onclick = charge;
+    box.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); charge(); } };
+  }
+
+  function closeOverlay() {
+    overlay.classList.remove('show');
+    resetStage();
+  }
+  closeBtn.addEventListener('click', closeOverlay);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) { closeOverlay(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && overlay.classList.contains('show')) { closeOverlay(); } });
+
+  document.querySelectorAll('.pack-cta').forEach(function (cta) {
+    var id = cta.getAttribute('data-appid');
+    var outcome = cta.getAttribute('data-outcome');
+    var title = cta.getAttribute('data-title');
+    var company = cta.getAttribute('data-company');
+    var btn = cta.querySelector('button');
+
+    function markCardOpened() {
+      btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Replay reveal';
+      btn.classList.remove('pack-open-btn');
+      if (!cta.querySelector('.result-chip')) { cta.insertBefore(makeChip(outcome), btn); }
+    }
+
+    if (wasOpened(id)) { markCardOpened(); }
+
+    btn.addEventListener('click', function () {
+      openPack(outcome, title, company);
+      markOpened(id);
+      markCardOpened();
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -23,8 +23,14 @@ def index(request):
             state = 'done' if i < current else ('active' if i == current else 'todo')
             stages.append({'label': labels.get(key, key.title()), 'state': state})
         progress = int(current / (len(STAGE_ORDER) - 1) * 100)
+        outcome = ''
+        if app.status == 'offer':
+            outcome = 'accepted'
+        elif app.status == 'closed':
+            outcome = 'rejected'
         items.append({'app': app, 'stages': stages, 'progress': progress,
-                      'current_label': labels.get(app.status, app.status)})
+                      'current_label': labels.get(app.status, app.status),
+                      'outcome': outcome})
     template_data = {}
     template_data['title'] = 'My Applications'
     template_data['applications'] = items
