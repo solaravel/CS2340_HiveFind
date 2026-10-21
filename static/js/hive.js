@@ -5,9 +5,6 @@
     var hasAnime = typeof window.anime !== 'undefined';
     var el = document.currentScript;
     var combUrl = el.getAttribute('data-honeycomb');
-    var beeUrl = el.getAttribute('data-bee');
-
-    function rand(min, max) { return Math.random() * (max - min) + min; }
 
     /* ---------- reveal-on-scroll ---------- */
     function revealAll() {
@@ -89,60 +86,6 @@
         update();
     }
 
-    /* ---------- bee confetti burst on any click ---------- */
-    var fxLayer = null;
-    function getFx() {
-        if (!fxLayer) {
-            fxLayer = document.createElement('div');
-            fxLayer.className = 'fx-layer';
-            document.body.appendChild(fxLayer);
-        }
-        return fxLayer;
-    }
-
-    function burst(x, y) {
-        if (reduce || !hasAnime || !beeUrl) { return; }
-        var layer = getFx();
-        var n = 10 + Math.floor(Math.random() * 4);
-        for (var i = 0; i < n; i++) {
-            var bit = document.createElement('img');
-            bit.className = 'fx-bit';
-            bit.src = beeUrl;
-            bit.alt = '';
-            var size = 16 + Math.random() * 16;
-            bit.style.width = size + 'px';
-            bit.style.height = 'auto';
-            bit.style.left = x + 'px';
-            bit.style.top = y + 'px';
-            layer.appendChild(bit);
-            (function (node) {
-                var ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.5;
-                var speed = 70 + Math.random() * 150;
-                var dx = Math.cos(ang) * speed;
-                var dy = Math.sin(ang) * speed;
-                anime({
-                    targets: node,
-                    translateX: [0, dx],
-                    translateY: [
-                        { value: dy, duration: 380, easing: 'easeOutQuad' },
-                        { value: dy + 200 + Math.random() * 140, duration: 950, easing: 'easeInQuad' }
-                    ],
-                    rotate: Math.random() * 720 - 360,
-                    scale: [0.3, 1, 0.75],
-                    opacity: [1, 1, 0],
-                    duration: 1250 + Math.random() * 500,
-                    complete: function () { node.remove(); }
-                });
-            })(bit);
-        }
-    }
-
-    function setupBurst() {
-        document.addEventListener('click', function (e) {
-            burst(e.clientX, e.clientY);
-        });
-    }
-
     /* ---------- magnetic buttons ---------- */
     function setupMagnetic() {
         if (reduce || window.matchMedia('(hover: none)').matches) { return; }
@@ -192,7 +135,6 @@
         setupReveals();
         bobBrand();
         scrollProgress();
-        setupBurst();
         setupMagnetic();
         setupTilt();
         setupCounters();
