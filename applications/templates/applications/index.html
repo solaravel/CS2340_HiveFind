@@ -47,13 +47,8 @@
 .pack-box-inner { position: relative; width: 100%; height: 100%; }
 .pack-box.floating .pack-box-inner { animation: packFloat 1.6s ease-in-out infinite alternate; }
 @keyframes packFloat { from { transform: translateY(-6px) rotate(-2deg); } to { transform: translateY(6px) rotate(2deg); } }
-.pack-hex { width: 100%; height: 100%; display: block; }
-.pack-bee {
-    position: absolute; top: 50%; left: 50%; width: 96px;
-    transform: translate(-50%,-50%); z-index: 3;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,.35));
-    pointer-events: none;
-}
+.jar-svg { width: 100%; height: 100%; display: block; }
+.jar-lid { transform-box: fill-box; transform-origin: 50% 100%; }
 .pack-hint {
     margin-top: 20px; position: relative; z-index: 2;
     color: var(--honey-light); font-family: var(--font-head);
@@ -152,7 +147,7 @@
            data-title="{{ item.app.job.title }}"
            data-company="{{ item.app.job.company }}">
         <button type="button" class="button pack-open-btn">
-          <i class="bi bi-box2-heart-fill"></i> The hive decided. Open your pack!
+          <i class="bi bi-droplet-fill"></i> The hive decided. Crack open your honey jar!
         </button>
       </div>
       {% endif %}
@@ -173,21 +168,28 @@
     <div class="pack-flash"></div>
     <div class="pack-box" id="packBox" role="button" tabindex="0" aria-label="Open your result">
       <div class="pack-box-inner">
-        <svg class="pack-hex" viewBox="0 0 120 138" aria-hidden="true">
+        <svg class="jar-svg" viewBox="0 0 140 170" aria-hidden="true">
           <defs>
-            <linearGradient id="packGrad" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="jarHoney" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#FFE082"/>
-              <stop offset="0.55" stop-color="#FFB300"/>
+              <stop offset="0.5" stop-color="#FFB300"/>
               <stop offset="1" stop-color="#FF8F00"/>
             </linearGradient>
           </defs>
-          <polygon points="60,5 113,35.5 113,102.5 60,133 7,102.5 7,35.5"
-                   fill="url(#packGrad)" stroke="#2B2015" stroke-width="6" stroke-linejoin="round"/>
+          <rect x="30" y="44" width="80" height="16" rx="6" fill="url(#jarHoney)" stroke="#2B2015" stroke-width="5"/>
+          <rect x="18" y="52" width="104" height="106" rx="30" fill="url(#jarHoney)" stroke="#2B2015" stroke-width="5"/>
+          <rect x="33" y="70" width="12" height="58" rx="6" fill="#ffffff" opacity="0.32"/>
+          <rect x="30" y="94" width="80" height="38" rx="10" fill="#FFF6DC" stroke="#2B2015" stroke-width="4"/>
+          <text x="70" y="118" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="15" fill="#2B2015">HONEY</text>
+          <g class="jar-lid" id="jarLid">
+            <rect x="58" y="14" width="24" height="14" rx="6" fill="#FF8F00" stroke="#2B2015" stroke-width="4"/>
+            <rect x="22" y="26" width="96" height="23" rx="9" fill="#FF8F00" stroke="#2B2015" stroke-width="5"/>
+            <rect x="27" y="30" width="86" height="6" rx="3" fill="#FFD54F"/>
+          </g>
         </svg>
-        <img class="pack-bee" src="{% static 'img/bee.svg' %}" alt="">
       </div>
     </div>
-    <p class="pack-hint" id="packHint"><i class="bi bi-hand-index-fill"></i> Tap the hive to crack it open!</p>
+    <p class="pack-hint" id="packHint"><i class="bi bi-hand-index-fill"></i> Tap the jar to pop the lid!</p>
     <div class="pack-result" id="packResult"></div>
     <button type="button" class="button pack-close" id="packClose">Sweet! <i class="bi bi-check-lg"></i></button>
   </div>
@@ -201,6 +203,7 @@
   var overlay = document.getElementById('packOverlay');
   if (!overlay) { return; }
   var box = document.getElementById('packBox');
+  var lid = document.getElementById('jarLid');
   var rays = overlay.querySelector('.pack-rays');
   var flash = overlay.querySelector('.pack-flash');
   var hint = document.getElementById('packHint');
@@ -259,20 +262,24 @@
         bit.style.borderRadius = '2px';
       }
       bit.style.left = '50%';
-      bit.style.top = '44%';
+      bit.style.top = '34%';
       stage.appendChild(bit);
       (function (node) {
-        var ang = Math.random() * Math.PI * 2;
-        var dist = 80 + Math.random() * 260;
+        var ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.25;
+        var speed = 90 + Math.random() * 230;
+        var dx = Math.cos(ang) * speed;
+        var dy = Math.sin(ang) * speed;
         anime({
           targets: node,
-          translateX: Math.cos(ang) * dist,
-          translateY: [Math.sin(ang) * dist * 0.6, Math.sin(ang) * dist * 0.6 + 260 + Math.random() * 180],
+          translateX: [0, dx],
+          translateY: [
+            { value: dy, duration: 420, easing: 'easeOutQuad' },
+            { value: dy + 300 + Math.random() * 180, duration: 1100, easing: 'easeInQuad' }
+          ],
           rotate: Math.random() * 720 - 360,
           scale: [1, 0.3],
           opacity: [1, 1, 0],
-          duration: 1400 + Math.random() * 900,
-          easing: 'easeOutCubic',
+          duration: 1500 + Math.random() * 800,
           complete: function () { node.remove(); }
         });
       })(bit);
@@ -281,10 +288,11 @@
 
   function resetStage() {
     if (raySpin) { raySpin.pause(); raySpin = null; }
-    if (hasAnime) { anime.remove([box, rays, flash, resultEl]); }
+    if (hasAnime) { anime.remove([box, lid, rays, flash, resultEl]); }
     overlay.querySelectorAll('.pack-confetti-bit').forEach(function (b) { b.remove(); });
     charging = false;
     box.classList.remove('floating');
+    if (lid) { lid.style.transform = ''; lid.style.opacity = ''; }
     box.style.display = '';
     box.style.opacity = '';
     box.style.transform = '';
@@ -323,50 +331,48 @@
       anime.remove(box);
       var accepted = outcome === 'accepted';
 
-      anime({ targets: rays, opacity: [0, 1], duration: 500 });
-      raySpin = anime({ targets: rays, rotate: '1turn', duration: 6000, loop: true, easing: 'linear' });
+      anime({ targets: rays, opacity: [0, 0.5], duration: 600 });
+      raySpin = anime({ targets: rays, rotate: '1turn', duration: 11000, loop: true, easing: 'linear' });
 
       var tl = anime.timeline({ easing: 'easeOutQuad' });
+      // jar rattles as the pressure builds
       tl.add({
         targets: box,
         keyframes: [
-          { rotate: -4, translateX: -4, duration: 70 },
-          { rotate: 4, translateX: 4, duration: 70 },
-          { rotate: -7, translateX: -7, duration: 60 },
-          { rotate: 7, translateX: 7, duration: 60 },
-          { rotate: -10, translateX: -9, scale: 1.06, duration: 52 },
-          { rotate: 10, translateX: 9, duration: 52 },
-          { rotate: -13, scale: 1.1, duration: 44 },
-          { rotate: 13, duration: 44 },
-          { rotate: 0, scale: 1.16, duration: 40 }
+          { rotate: -5, translateX: -4, duration: 100 },
+          { rotate: 5, translateX: 4, duration: 100 },
+          { rotate: -4, scale: 1.04, duration: 95 },
+          { rotate: 0, scale: 1.06, duration: 110 }
         ],
-        loop: 3,
-        duration: 1500
+        loop: 2
       });
+      // lid pops off and tumbles away while honey erupts from the mouth
       tl.add({
-        targets: flash, opacity: [0, 1], scale: [0.2, 1], duration: 160, easing: 'easeOutQuad',
-        begin: function () { confetti(accepted ? 95 : 38, accepted); }
+        targets: lid, translateX: [0, 34], translateY: [0, -150], rotate: [0, -46], opacity: [1, 1, 0],
+        duration: 650, easing: 'easeOutQuad',
+        begin: function () {
+          confetti(accepted ? 34 : 16, accepted);
+          anime({ targets: flash, opacity: [0, 0.85, 0], scale: [0.2, 1.1], duration: 560, easing: 'easeOutQuad' });
+        }
       });
+      // jar sinks away
       tl.add({
-        targets: box, scale: 1.55, opacity: 0, duration: 260, easing: 'easeInQuad',
+        targets: box, scale: [1, 0.5], opacity: [1, 0], duration: 360, easing: 'easeInQuad',
         complete: function () { box.style.display = 'none'; }
-      }, '-=130');
-      tl.add({ targets: flash, opacity: 0, duration: 320 });
+      }, '-=280');
+      // the result rises out of the jar
       tl.add({
-        targets: resultEl, scale: [0.3, 1], rotateY: [90, 0], opacity: [0, 1],
-        duration: 760, easing: 'easeOutElastic(1, .6)',
+        targets: resultEl, translateY: [70, 0], scale: [0.7, 1], opacity: [0, 1],
+        duration: 560, easing: 'easeOutBack',
         begin: function () {
           resultEl.innerHTML = resultHtml(outcome, title, company);
           resultEl.classList.add(outcome, 'show');
         }
-      });
+      }, '-=80');
       tl.add({
         targets: closeBtn, opacity: [0, 1], duration: 300,
         begin: function () { closeBtn.classList.add('show'); }
       });
-      if (accepted) {
-        tl.add({ duration: 420, complete: function () { confetti(42, true); } });
-      }
     }
 
     box.onclick = charge;
