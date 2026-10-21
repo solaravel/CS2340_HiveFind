@@ -27,14 +27,27 @@
     var userMarker = null;
     var radiusCircle = null;
 
-    var map = L.map('map').setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-    var esriLightGray = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}';
-    var esriLightGrayLabels = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}';
-    L.tileLayer(esriLightGray, {
-        maxZoom: 16,
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
+    var map = L.map('map', { zoomControl: true }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    // Colourful OpenStreetMap basemap (honey-tinted via CSS filter on the tile pane)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
-    L.tileLayer(esriLightGrayLabels, { maxZoom: 16 }).addTo(map);
+
+    // Honeycomb bee pin, built once and reused per marker
+    function jobIcon() {
+        return L.divIcon({
+            className: 'hive-pin-wrap',
+            html: '<div class="hive-pin">' +
+                '<svg class="hive-pin-hex" viewBox="0 0 40 46" aria-hidden="true">' +
+                '<polygon points="20,1 38,11.5 38,34.5 20,45 2,34.5 2,11.5" ' +
+                'fill="#FFB300" stroke="#2B2015" stroke-width="3" stroke-linejoin="round"/></svg>' +
+                '<span class="hive-pin-ico">🐝</span></div>',
+            iconSize: [40, 46],
+            iconAnchor: [20, 45],
+            popupAnchor: [0, -42]
+        });
+    }
 
     function loadPrefs() {
         try {
@@ -84,7 +97,10 @@
         jobMarkers.forEach(function (m) { map.removeLayer(m.marker); });
         jobMarkers = [];
         allJobs.forEach(function (job) {
-            var marker = L.marker([job.latitude, job.longitude]).bindPopup(popupHtml(job));
+            var marker = L.marker([job.latitude, job.longitude], {
+                icon: jobIcon(),
+                riseOnHover: true
+            }).bindPopup(popupHtml(job));
             jobMarkers.push({ job: job, marker: marker });
         });
         applyFilter();
@@ -121,7 +137,8 @@
         if (radiusMiles === null || !userLocation) { return; }
         radiusCircle = L.circle([userLocation.lat, userLocation.lng], {
             radius: radiusMiles * 1609.34,
-            color: '#003057', weight: 1, fillColor: '#b3a369', fillOpacity: 0.12
+            color: '#FF8F00', weight: 3, dashArray: '8 8',
+            fillColor: '#FFB300', fillOpacity: 0.14
         }).addTo(map);
     }
 
@@ -139,7 +156,13 @@
         userLocation = { lat: lat, lng: lng };
         if (userMarker) { map.removeLayer(userMarker); }
         userMarker = L.marker([lat, lng], {
-            icon: L.divIcon({ className: 'user-pin', html: '◉', iconSize: [24, 24] })
+            icon: L.divIcon({
+                className: 'user-pin-wrap',
+                html: '<div class="user-pin"><span class="user-pin-ring"></span>' +
+                    '<span class="user-pin-dot"></span></div>',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            })
         }).addTo(map).bindPopup('You are here');
         els.locationStatus.textContent = label ||
             ('Location set: ' + lat.toFixed(4) + ', ' + lng.toFixed(4));

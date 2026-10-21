@@ -497,3 +497,186 @@ html.scrolly .hero-stage { position: sticky; top: 0; height: 100vh; overflow: hi
     .navbar { justify-content: center; }
     .brand { width: 100%; justify-content: center; }
 }
+
+/* ============================================================
+   OVER-THE-TOP HIVE FLAIR
+   ============================================================ */
+
+/* Living, breathing honey background */
+.hive-bg {
+    background:
+        radial-gradient(circle at 20% 10%, rgba(255,213,79,0.55), transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(255,143,0,0.35), transparent 45%),
+        radial-gradient(circle at 60% 50%, rgba(255,193,7,0.22), transparent 55%),
+        var(--cream);
+    background-size: 160% 160%, 160% 160%, 200% 200%, 100% 100%;
+    animation: honeyDrift 24s ease-in-out infinite alternate;
+}
+@keyframes honeyDrift {
+    0%   { background-position: 0% 0%, 100% 100%, 50% 50%, 0 0; }
+    50%  { background-position: 30% 20%, 70% 80%, 60% 40%, 0 0; }
+    100% { background-position: 10% 40%, 90% 60%, 40% 60%, 0 0; }
+}
+.hive-bg svg { animation: combPulse 10s ease-in-out infinite; }
+@keyframes combPulse { 0%,100% { opacity: .42; } 50% { opacity: .62; } }
+
+/* Drifting light sheen over everything */
+.hive-bg::after {
+    content: "";
+    position: absolute;
+    inset: -40%;
+    background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 60%);
+    width: 60%; height: 60%;
+    filter: blur(40px);
+    animation: sheenRoam 18s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+@keyframes sheenRoam {
+    0%   { transform: translate(-10%, -10%); }
+    100% { transform: translate(120%, 120%); }
+}
+
+/* Honey-drip scroll progress bar */
+.scroll-progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 5px;
+    width: 0%;
+    z-index: 999;
+    background: linear-gradient(90deg, var(--honey-deep), var(--honey), var(--honey-light), var(--honey-deep));
+    background-size: 300% 100%;
+    box-shadow: 0 0 10px rgba(255,143,0,.7);
+    animation: progFlow 3s linear infinite;
+    transition: width .08s linear;
+}
+@keyframes progFlow { to { background-position: 300% 0; } }
+
+/* Animated gradient headings */
+.section-band h2,
+.honey-band h2,
+.page-header h1 {
+    background: linear-gradient(90deg, var(--ink), var(--honey-deep), var(--ink));
+    background-size: 220% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShine 6s linear infinite;
+}
+@keyframes textShine { to { background-position: 220% 0; } }
+/* keep header-on-honey readable (solid ink) */
+.page-header h1 {
+    background: none;
+    -webkit-text-fill-color: var(--ink);
+}
+
+/* Glossy sweep on every button */
+.button, .btn-honey, .btn, .btn-dark, .link-button, .hud-btn {
+    position: relative;
+    overflow: hidden;
+}
+.button::after, .btn-honey::after, .btn::after, .btn-dark::after, .link-button::after, .hud-btn::after {
+    content: "";
+    position: absolute;
+    top: 0; left: -120%;
+    width: 60%; height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,0.75), transparent);
+    transform: skewX(-20deg);
+    transition: none;
+    pointer-events: none;
+}
+.button:hover::after, .btn-honey:hover::after, .btn:hover::after,
+.btn-dark:hover::after, .link-button:hover::after, .hud-btn:hover::after {
+    animation: shineSweep .7s ease;
+}
+@keyframes shineSweep { to { left: 160%; } }
+.button:hover, .btn-honey:hover { transform: translate(-2px,-3px) rotate(-1.5deg) scale(1.03); }
+
+/* Pop-in wobble for playful icons */
+.feature-ico, .page-header-ico {
+    transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.card:hover .feature-ico,
+.page-header:hover .page-header-ico { animation: jiggle .5s ease; }
+@keyframes jiggle {
+    0%,100% { transform: rotate(0) scale(1); }
+    25% { transform: rotate(-12deg) scale(1.12); }
+    50% { transform: rotate(10deg) scale(1.12); }
+    75% { transform: rotate(-6deg) scale(1.06); }
+}
+
+/* 3D tilt-ready cards with glossy overlay */
+.card, .hive-card { transform-style: preserve-3d; will-change: transform; }
+.card { position: relative; overflow: hidden; }
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(130deg, rgba(255,255,255,0.55) 0%, transparent 35%);
+    opacity: 0;
+    transition: opacity .2s ease;
+    pointer-events: none;
+    z-index: 1;
+}
+.card:hover::before { opacity: 1; }
+.card .card-body { position: relative; z-index: 2; }
+
+/* Skill pills: bouncy and colourful on hover */
+.skills li {
+    transition: transform .18s cubic-bezier(.34,1.56,.64,1), background .18s ease;
+    cursor: default;
+}
+.skills li:hover {
+    transform: translateY(-4px) rotate(-3deg) scale(1.08);
+    background: var(--honey-deep);
+    color: #fff;
+}
+
+/* Badges gently pulse */
+.job-tags .badge { animation: badgePulse 2.4s ease-in-out infinite; }
+.job-tags .badge:nth-child(2) { animation-delay: .6s; }
+@keyframes badgePulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 0 rgba(255,143,0,0); }
+    50% { transform: scale(1.06); box-shadow: 0 0 10px rgba(255,143,0,.5); }
+}
+
+/* Nav brand glow on hover */
+.brand:hover { text-shadow: 0 0 14px rgba(255,143,0,.6); }
+
+/* Floating confetti/sparkle layer (JS populated) */
+.fx-layer {
+    position: fixed; inset: 0; z-index: 900;
+    pointer-events: none; overflow: hidden;
+}
+.fx-bit {
+    position: absolute;
+    will-change: transform, opacity;
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Magnetic buttons smooth out their follow */
+.magnetic { transition: transform .18s cubic-bezier(.34,1.56,.64,1); }
+
+/* Wordmark bee gets a soft glow */
+.bee-dot { filter: drop-shadow(0 4px 10px rgba(255,143,0,.45)); }
+
+/* honey-band call to action shimmer border */
+.honey-band, .page-header {
+    position: relative;
+    background-image:
+        linear-gradient(var(--honey), var(--honey)),
+        linear-gradient(120deg, var(--honey-light), var(--honey-deep), var(--gold), var(--honey-light));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 100% 100%, 300% 300%;
+    animation: bandShift 8s ease infinite;
+}
+@keyframes bandShift { 0%,100% { background-position: 0 0, 0% 50%; } 50% { background-position: 0 0, 100% 50%; } }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .hive-bg, .hive-bg::after, .hive-bg svg,
+    .section-band h2, .honey-band h2,
+    .scroll-progress, .job-tags .badge,
+    .honey-band, .page-header { animation: none !important; }
+}

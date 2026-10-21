@@ -6,15 +6,50 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css" referrerpolicy="no-referrer">
-  <style>#applicantMap { height: 72vh; }</style>
+  <style>
+    #applicantMap {
+      height: 70vh;
+      border: 3px solid var(--ink);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      background: #ffe6b8;
+    }
+    #applicantMap .leaflet-tile-pane {
+      filter: sepia(0.28) saturate(1.45) hue-rotate(-8deg) brightness(1.04) contrast(1.02);
+    }
+    .hive-pin-wrap { background: none; border: none; }
+    .hive-pin { position: relative; width: 40px; height: 46px; cursor: pointer;
+      animation: pinDrop .6s cubic-bezier(.3,1.5,.6,1) both; transform-origin: 50% 100%; }
+    .hive-pin-hex { position: absolute; inset: 0; width: 40px; height: 46px;
+      filter: drop-shadow(2px 4px 0 rgba(43,32,21,.35)); transition: transform .15s ease; }
+    .hive-pin-ico { position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; padding-bottom: 7px; font-size: 17px; }
+    .hive-pin:hover .hive-pin-hex { transform: scale(1.12) rotate(-4deg); }
+    @keyframes pinDrop { 0% { transform: translateY(-120px) scale(.4); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; } }
+    .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background: rgba(255,143,0,.35); }
+    .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+      background: var(--honey); color: var(--ink); border: 2px solid var(--ink);
+      font-family: var(--font-head); font-weight: 700; box-shadow: 2px 2px 0 var(--ink); }
+    .leaflet-popup-content-wrapper { border: 3px solid var(--ink) !important; border-radius: 16px !important;
+      box-shadow: 5px 5px 0 var(--ink) !important; background: var(--cream) !important; }
+    .leaflet-popup-tip { border: 3px solid var(--ink) !important; background: var(--cream) !important; }
+    .leaflet-popup-content { font-family: var(--font-body); font-weight: 600; }
+    .leaflet-bar a { background: var(--honey) !important; color: var(--ink) !important;
+      border: 2px solid var(--ink) !important; font-weight: 700; }
+  </style>
 {% endblock %}
 
 {% block content %}
-<div class="p-3">
-  <h1>Applicant Map</h1>
-  <p>See where the people who applied to your jobs are located.</p>
-  <div id="applicantMap"></div>
+<div class="page-header" data-reveal>
+  <div class="page-header-ico"><i class="bi bi-geo-alt-fill"></i></div>
+  <div>
+    <h1>Applicant Map</h1>
+    <p>See where the bees who applied to your jobs are buzzing from.</p>
+  </div>
 </div>
+<div id="applicantMap" data-reveal></div>
 {% endblock %}
 
 {% block scripts %}
@@ -22,16 +57,29 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js" referrerpolicy="no-referrer"></script>
   <script>
     var map = L.map('applicantMap').setView([37.8, -96], 4);
-    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19, attribution: 'Tiles &copy; Esri'
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+    function hiveIcon() {
+      return L.divIcon({
+        className: 'hive-pin-wrap',
+        html: '<div class="hive-pin"><svg class="hive-pin-hex" viewBox="0 0 40 46" aria-hidden="true">' +
+          '<polygon points="20,1 38,11.5 38,34.5 20,45 2,34.5 2,11.5" fill="#FFB300" stroke="#2B2015" ' +
+          'stroke-width="3" stroke-linejoin="round"/></svg><span class="hive-pin-ico">🐝</span></div>',
+        iconSize: [40, 46], iconAnchor: [20, 45], popupAnchor: [0, -42]
+      });
+    }
+
     var cluster = L.markerClusterGroup();
     fetch('{% url "applications.applicant_map_data" %}')
       .then(function (r) { return r.json(); })
       .then(function (data) {
         var pts = [];
         data.applicants.forEach(function (a) {
-          var m = L.marker([a.lat, a.lng]).bindPopup(a.name + ' &mdash; ' + a.job);
+          var m = L.marker([a.lat, a.lng], { icon: hiveIcon() })
+            .bindPopup('<strong>' + a.name + '</strong><br>' + a.job);
           cluster.addLayer(m);
           pts.push([a.lat, a.lng]);
         });
