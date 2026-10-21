@@ -1,40 +1,39 @@
 {% extends 'hivefind/base.html' %}
 {% block content %}
 {% load static %}
-{% load cart_filters %}
-<div class="p-3">
-  <div class="container">
-    <div class="row mt-3">
-      <div class="col mx-auto mb-3">
-        <h2>Job Cart</h2>
-        <hr />
-      </div>
-    </div>
-    <div class="row m-1">
-      <table class="table table-bordered table-striped
-        text-center">
-        <thead>
-          <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Title</th>
-            <th scope="col">Employer</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for job in template_data.jobs_in_cart %}
-          <tr>
-            <td>{{ job.id }}</td>
-            <td>{{ job.title }}</td>
-            <td>{{ job.company }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <div class="row">
-      <div class="text-end">
+<div class="page-header" data-reveal>
+  <div class="page-header-ico"><i class="bi bi-cart-fill"></i></div>
+  <div>
+    <h1>Your Honey Pot</h1>
+    <p>Roles you've collected to compare before you commit.</p>
+  </div>
+</div>
+
+<div class="row g-4" data-reveal-group>
+  {% for job in template_data.jobs_in_cart %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">{{ job.title }}</h5>
+        <h6 class="card-subtitle mb-2">{{ job.company }}</h6>
+        <p class="card-text job-meta">
+          {% if job.city %}<span><i class="bi bi-geo-alt-fill"></i> {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}</span>{% endif %}
+          <span><i class="bi bi-cash-coin"></i> {{ job.salary_display }}</span>
+        </p>
+        <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-dark">
+          <i class="bi bi-arrow-right-circle"></i> View Job
+        </a>
       </div>
     </div>
   </div>
+  {% empty %}
+  <div class="col">
+    <div class="hive-card cart-empty">
+      <h2><i class="bi bi-basket"></i> Your cart is empty</h2>
+      <p>Add roles from a job page to collect and compare them here.</p>
+      <a class="button" href="{% url 'jobs.index' %}">Browse Jobs</a>
+    </div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock content %}

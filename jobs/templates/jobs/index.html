@@ -1,63 +1,63 @@
 {% extends 'hivefind/base.html' %}
-{% block content %}
 {% load static %}
-<div class="p-3">
-  <div class="container">
-    {% if user.is_authenticated and template_data.recommendations %}
-    <div class="row mt-3">
-      <div class="col">
-        <h2>Recommended for You</h2>
-        <div class="row">
-          {% for job in template_data.recommendations %}
-          <div class="col-md-4 col-lg-3 mb-2">
-            <div class="card h-100">
-              <div class="card-body">
-                <h5 class="card-title">{{ job.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ job.company }}</h6>
-                <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-dark">View Job</a>
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        <hr />
-      </div>
-    </div>
-    {% endif %}
-    <div class="row mt-3">
-      <div class="col mx-auto mb-3">
-        <h2>List of Jobs</h2>
-        <hr />
-      </div>
-    </div>
-    <div class="row">
-      {% for job in template_data.jobs %}
-      <div class="col-md-4 col-lg-3 mb-2">
-        <div class="card h-100">
-          
-        <div class="card-body">
-          <h5 class="card-title">
-            {{ job.title }}
-        </h5>
+{% block content %}
+<div class="page-header" data-reveal>
+  <div class="page-header-ico"><i class="bi bi-briefcase-fill"></i></div>
+  <div>
+    <h1>Browse the Hive</h1>
+    <p>Every open role in the colony, ready to explore.</p>
+  </div>
+</div>
 
-          <h6 class="card-subtitle mb-2 text-muted">
-            {{ job.company }}
-          </h6>
-
-          <p class="card-text">
-            {{ job.description }}
-          </p>
-          <a
-              href="{% url 'jobs.show' id=job.id %}"
-              class="btn btn-dark"
-            >
-              View Job
-            </a>
-          </div>
-        </div>
+{% if user.is_authenticated and template_data.recommendations %}
+<section class="section-band" data-reveal>
+  <h2><i class="bi bi-stars"></i> Recommended for You</h2>
+</section>
+<div class="row g-4 mb-4" data-reveal-group>
+  {% for job in template_data.recommendations %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">{{ job.title }}</h5>
+        <h6 class="card-subtitle mb-2">{{ job.company }}</h6>
+        <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-dark">
+          <i class="bi bi-arrow-right-circle"></i> View Job
+        </a>
       </div>
-      {% endfor %}
     </div>
   </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<section class="section-band" data-reveal>
+  <h2><i class="bi bi-hexagon-fill"></i> All Jobs</h2>
+</section>
+<div class="row g-4" data-reveal-group>
+  {% for job in template_data.jobs %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">{{ job.title }}</h5>
+        <h6 class="card-subtitle mb-2">{{ job.company }}</h6>
+        <p class="card-text job-meta">
+          {% if job.city %}<span><i class="bi bi-geo-alt-fill"></i> {{ job.city }}{% if job.state %}, {{ job.state }}{% endif %}</span>{% endif %}
+          <span><i class="bi bi-cash-coin"></i> {{ job.salary_display }}</span>
+        </p>
+        <div class="job-tags mb-3">
+          {% if job.is_remote %}<span class="badge">Remote</span>{% endif %}
+          {% if job.visa_sponsorship %}<span class="badge">Visa</span>{% endif %}
+        </div>
+        <a href="{% url 'jobs.show' id=job.id %}" class="btn btn-dark">
+          <i class="bi bi-arrow-right-circle"></i> View Job
+        </a>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col">
+    <div class="hive-card">No jobs posted in the hive yet &#8212; check back soon!</div>
+  </div>
+  {% endfor %}
 </div>
 {% endblock content %}

@@ -1,48 +1,68 @@
 {% extends 'hivefind/base.html' %}
+{% load static %}
 
 {% block title %}{{ template_data.title }} &middot; HiveFind{% endblock %}
 
 {% block content %}
-<section class="profile">
+<div class="page-header" data-reveal>
+  <div class="profile-avatar"><img src="{% static 'img/bee.svg' %}" alt=""></div>
+  <div class="profile-hero">
+    <div>
+      <h1>{{ template_data.title }}</h1>
+      {% if template_data.can_view %}
+        <p class="headline lead">{{ template_data.headline }}</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
 
-    <h1>{{ template_data.title }}</h1>
+{% if template_data.can_view %}
+<div class="profile-grid" data-reveal-group>
+  <div class="hive-card">
+    <h2><i class="bi bi-mortarboard-fill"></i> Education</h2>
+    <p>{{ template_data.education|default:"Not added yet." }}</p>
+  </div>
 
-    {% if template_data.can_view %}
-    <p class="headline">{{ template_data.headline }}</p>
-
-    <h2>Education</h2>
-    <p>{{ template_data.education }}</p>
-
-    <h2>Skills</h2>
+  <div class="hive-card">
+    <h2><i class="bi bi-lightning-charge-fill"></i> Skills</h2>
     {% if template_data.skills %}
-        <ul class="skills">
-            {% for skill in template_data.skills %}
-                <li>{{ skill.name }}</li>
-            {% endfor %}
-        </ul>
+      <ul class="skills">
+        {% for skill in template_data.skills %}<li>{{ skill.name }}</li>{% endfor %}
+      </ul>
     {% else %}
-        <p>No skills listed.</p>
+      <p>No skills listed yet.</p>
     {% endif %}
+  </div>
 
-    <h2>Work Experience</h2>
-    <p>{{ template_data.work_exp }}</p>
+  <div class="hive-card full">
+    <h2><i class="bi bi-briefcase-fill"></i> Work Experience</h2>
+    <p>{{ template_data.work_exp|default:"Not added yet." }}</p>
+  </div>
 
-    <h2>Links</h2>
+  <div class="hive-card full">
+    <h2><i class="bi bi-link-45deg"></i> Links</h2>
     {% if template_data.links %}
-        <p><a href="{{ template_data.links }}" target="_blank" rel="noopener noreferrer">{{ template_data.links }}</a></p>
+      <p><a href="{{ template_data.links }}" target="_blank" rel="noopener noreferrer">{{ template_data.links }}</a></p>
     {% else %}
-        <p>No links added.</p>
+      <p>No links added yet.</p>
     {% endif %}
-    {% else %}
-    <p>This profile is private.</p>
-    {% endif %}
-    {% if template_data.profile_user == user %}
-        <li>
-            <a href="{% url 'accounts.edit_profile' %}" class="button">Edit Profile</a>
-        </li>
-    {% endif %}
-    {% if user.is_authenticated and template_data.profile_user != user %}
-        <a href="{% url 'jobs.report_user' template_data.profile_user.id %}">Report this user</a>
-    {% endif %}
-</section>
+  </div>
+</div>
+{% else %}
+<div class="hive-card" data-reveal>
+  <p><i class="bi bi-lock-fill"></i> This profile is private.</p>
+</div>
+{% endif %}
+
+<div class="cart-actions" data-reveal>
+  {% if template_data.profile_user == user %}
+    <a href="{% url 'accounts.edit_profile' %}" class="button">
+      <i class="bi bi-pencil-square"></i> Edit Profile
+    </a>
+  {% elif user.is_authenticated %}
+    <a href="{% url 'jobs.report_user' template_data.profile_user.id %}" class="button button-secondary">
+      <i class="bi bi-flag-fill"></i> Report this user
+    </a>
+  {% endif %}
+</div>
 {% endblock %}

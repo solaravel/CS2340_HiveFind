@@ -1,37 +1,50 @@
 {% extends 'hivefind/base.html' %}
 {% block content %}
 {% load static %}
-<div class="p-3">
-  <div class="container">
-    <div class="row mt-3">
-      <div class="col mx-auto mb-3">
-        <h2>My Applications</h2>
-        <hr />
-      </div>
-    </div>
-
-    {% for application in template_data.applications %}
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title">{{ application.job.title }}</h5>
-        <h6 class="card-subtitle mb-2 text-muted">{{ application.job.company }}</h6>
-
-        <div class="row text-center mt-3">
-          {% for value, label in template_data.stages %}
-          <div class="col">
-            {% if application.status == value %}
-            <span class="badge bg-dark">{{ label }}</span>
-            {% else %}
-            <span class="badge bg-light text-muted">{{ label }}</span>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-    {% empty %}
-    <p>You have not applied to any jobs yet.</p>
-    {% endfor %}
+<div class="page-header" data-reveal>
+  <div class="page-header-ico"><i class="bi bi-list-check"></i></div>
+  <div>
+    <h1>My Applications</h1>
+    <p>Follow every buzz from Applied all the way to Offer.</p>
   </div>
+</div>
+
+<div data-reveal-group>
+  {% for item in template_data.applications %}
+  <div class="card app-card mb-3">
+    <div class="card-body">
+      <div class="app-head">
+        <div>
+          <h5 class="card-title">{{ item.app.job.title }}</h5>
+          <h6 class="card-subtitle">{{ item.app.job.company }}</h6>
+        </div>
+        <span class="badge">{{ item.current_label }}</span>
+      </div>
+
+      <div class="pipeline">
+        <div class="pipeline-fill" style="--w: {{ item.progress }}%"></div>
+        {% for st in item.stages %}
+        <div class="stage {{ st.state }}">
+          <div class="dot">
+            {% if st.state == 'done' %}<i class="bi bi-check-lg"></i>
+            {% elif st.state == 'active' %}<i class="bi bi-hexagon-fill"></i>{% endif %}
+          </div>
+          <span>{{ st.label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if item.app.note %}
+      <p class="app-note"><i class="bi bi-chat-left-quote-fill"></i> {{ item.app.note }}</p>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="hive-card cart-empty">
+    <h2><i class="bi bi-emoji-smile"></i> No applications yet</h2>
+    <p>You haven't applied to any jobs yet &#8212; go find a sweet role!</p>
+    <a class="button" href="{% url 'jobs.index' %}">Browse Jobs</a>
+  </div>
+  {% endfor %}
 </div>
 {% endblock content %}

@@ -1,21 +1,151 @@
 {% extends 'hivefind/base.html' %}
+{% load static %}
 
-{% block title %}HiveFind &middot; Home{% endblock %}
+{% block title %}HiveFind &#8212; Find your next job in the hive{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1>Welcome to HiveFind</h1>
-    <p class="lead">
-        A platform connecting early-career job seekers with recruiters looking
-        for talent.
-    </p>
-    {% if user.is_authenticated %}
-        <p>You are signed in as <strong>{{ user.username }}</strong>.</p>
-    {% else %}
-        <p class="cta">
-            <a class="button" href="{% url 'accounts.signup' %}">Get started</a>
-            <a class="button button-secondary" href="{% url 'accounts.login' %}">Log in</a>
-        </p>
-    {% endif %}
+<section class="hero-scene" data-hero-intro>
+  <div class="hero-stage">
+    <div class="hero-word" id="heroWord">
+      <h1 class="wordmark"><span class="wtext">HiveF</span><span class="doti"><span class="wtext">&#305;</span><span class="bee-dot-wrap" id="beeWrap"><img class="bee-dot flutter" src="{% static 'img/bee.svg' %}" alt=""></span></span><span class="wtext">nd</span></h1>
+      <p class="wordmark-sub wtext">The sweetest way to find your next job.</p>
+    </div>
+    <div class="scroll-cue" id="scrollCue"><i class="bi bi-chevron-double-down"></i> scroll to explore</div>
+  </div>
+  <div class="honey-flash" id="honeyFlash" aria-hidden="true"></div>
 </section>
+
+<section class="after-hero">
+  <section class="intro-cta" data-reveal>
+    <h2>Find your next job in the hive.</h2>
+    <p class="lead">HiveFind buzzes job seekers and recruiters together &#8212; search smart,
+      explore roles on a map, and track every application from a single sweet spot.</p>
+    <div class="cta">
+      {% if user.is_authenticated %}
+        <a class="button" href="{% url 'jobs.index' %}">Browse Jobs</a>
+        <a class="button button-secondary" href="{% url 'jobs.map' %}">Open the Job Map</a>
+      {% else %}
+        <a class="button" href="{% url 'accounts.signup' %}">Join the Hive</a>
+        <a class="button button-secondary" href="{% url 'jobs.index' %}">Browse Jobs</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="section-band" data-reveal>
+    <h2>Everything you need, all in one hive</h2>
+  </section>
+
+  <div class="row g-4 feature-grid" data-reveal-group>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-geo-alt-fill"></i></div>
+        <h3 class="card-title">Interactive Job Map</h3>
+        <p>See postings on a live map, filter by distance, and set your commute radius.</p>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-search"></i></div>
+        <h3 class="card-title">Smart Search</h3>
+        <p>Filter by skill, location, salary, remote or on-site, and visa sponsorship.</p>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-list-check"></i></div>
+        <h3 class="card-title">Application Tracking</h3>
+        <p>Follow every application from Applied all the way to Offer.</p>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-cart-fill"></i></div>
+        <h3 class="card-title">Job Cart</h3>
+        <p>Collect and compare roles before you commit to applying.</p>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-person-badge-fill"></i></div>
+        <h3 class="card-title">Your Profile</h3>
+        <p>Show off your skills, education, and experience so recruiters find you.</p>
+      </div></div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="card h-100"><div class="card-body">
+        <div class="feature-ico"><i class="bi bi-briefcase-fill"></i></div>
+        <h3 class="card-title">For Recruiters</h3>
+        <p>Post roles and search candidates by skills, location, and projects.</p>
+      </div></div>
+    </div>
+  </div>
+
+  <section class="honey-band" data-reveal>
+    <h2>Ready to make a beeline for your dream job?</h2>
+    {% if not user.is_authenticated %}
+      <a class="button button-secondary" href="{% url 'accounts.signup' %}">Create your account</a>
+    {% else %}
+      <a class="button button-secondary" href="{% url 'jobs.search' %}">Start searching</a>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var scene = document.querySelector('.hero-scene');
+    var stage = document.querySelector('.hero-stage');
+    var word = document.getElementById('heroWord');
+    var wrap = document.getElementById('beeWrap');
+    var bee = wrap ? wrap.querySelector('.bee-dot') : null;
+    var flash = document.getElementById('honeyFlash');
+    var cue = document.getElementById('scrollCue');
+    var texts = document.querySelectorAll('.wtext');
+    if (reduce || !scene || !stage || !word || !wrap || !bee || !flash) { return; }
+
+    document.documentElement.classList.add('scrolly');
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    function render() {
+      var scrollable = scene.offsetHeight - window.innerHeight;
+      var p = scrollable > 0 ? clamp(-scene.getBoundingClientRect().top / scrollable, 0, 1) : 0;
+
+      var wf = clamp(1 - p / 0.18, 0, 1);
+      for (var i = 0; i < texts.length; i++) { texts[i].style.opacity = wf; }
+      if (cue) { cue.style.opacity = clamp(1 - p / 0.07, 0, 1); }
+
+      if (p <= 0.001) {
+        bee.classList.add('flutter');
+        wrap.style.transform = '';
+        bee.style.opacity = 1;
+        flash.style.opacity = 0;
+        return;
+      }
+      bee.classList.remove('flutter');
+
+      var ang = p * Math.PI * 3;
+      var rad = 70 + p * 60;
+      var x = Math.sin(ang) * rad * (1 - p);
+      var y = (Math.cos(ang) - 1) * rad * 0.4 - p * 12;
+      var sc = 1 + Math.pow(p, 1.5) * 12;
+      wrap.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) rotate(' + (p * 900) + 'deg) scale(' + sc + ')';
+
+      var fin = clamp((p - 0.34) / 0.24, 0, 1);
+      var fout = clamp((p - 0.66) / 0.26, 0, 1);
+      flash.style.opacity = Math.max(0, fin - fout);
+
+      bee.style.opacity = clamp(1 - (p - 0.52) / 0.16, 0, 1);
+    }
+
+    var ticking = false;
+    function onScroll() { if (!ticking) { ticking = true; requestAnimationFrame(function () { ticking = false; render(); }); } }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', render, { passive: true });
+    window.addEventListener('load', render);
+    render();
+  })();
+</script>
 {% endblock %}

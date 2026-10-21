@@ -9,13 +9,25 @@ from jobs.models import Job
 from .models import Application
 from accounts.models import JobSeeker
 
+STAGE_ORDER = ['applied', 'review', 'interview', 'offer', 'closed']
+
 @login_required
 def index(request):
     applications = Application.objects.filter(user=request.user)
+    labels = dict(Application.STATUS_CHOICES)
+    items = []
+    for app in applications:
+        current = STAGE_ORDER.index(app.status) if app.status in STAGE_ORDER else 0
+        stages = []
+        for i, key in enumerate(STAGE_ORDER):
+            state = 'done' if i < current else ('active' if i == current else 'todo')
+            stages.append({'label': labels.get(key, key.title()), 'state': state})
+        progress = int(current / (len(STAGE_ORDER) - 1) * 100)
+        items.append({'app': app, 'stages': stages, 'progress': progress,
+                      'current_label': labels.get(app.status, app.status)})
     template_data = {}
     template_data['title'] = 'My Applications'
-    template_data['applications'] = applications
-    template_data['stages'] = Application.STATUS_CHOICES
+    template_data['applications'] = items
     return render(request, 'applications/index.html', {'template_data': template_data})
 
 
