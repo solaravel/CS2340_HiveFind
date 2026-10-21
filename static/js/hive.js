@@ -89,49 +89,7 @@
         update();
     }
 
-    /* ---------- flying bee swarm ---------- */
-    function beeSwarm() {
-        if (reduce || !hasAnime || !beeUrl) { return; }
-        var field = document.getElementById('beeField');
-        if (!field) { return; }
-        var count = window.innerWidth < 700 ? 2 : 4;
-        for (var i = 0; i < count; i++) { launchBee(field, i * 1500); }
-    }
-
-    function launchBee(field, delay) {
-        var wrap = document.createElement('div');
-        wrap.className = 'bee';
-        var img = document.createElement('img');
-        img.src = beeUrl;
-        img.alt = '';
-        wrap.appendChild(img);
-        field.appendChild(wrap);
-
-        function fly() {
-            var fromLeft = Math.random() < 0.5;
-            var y1 = rand(40, window.innerHeight - 80);
-            var y2 = rand(40, window.innerHeight - 80);
-            var startX = fromLeft ? -80 : window.innerWidth + 80;
-            var endX = fromLeft ? window.innerWidth + 80 : -80;
-            wrap.style.transform = 'translate(' + startX + 'px,' + y1 + 'px) scaleX(' + (fromLeft ? 1 : -1) + ')';
-            anime({
-                targets: wrap,
-                translateX: [startX, endX],
-                translateY: [
-                    { value: y1 + rand(-30, 30), duration: 1600 },
-                    { value: y2, duration: 1600 },
-                    { value: y2 + rand(-30, 30), duration: 1600 }
-                ],
-                rotate: [{ value: rand(-8, 8) }, { value: rand(-8, 8) }, { value: rand(-8, 8) }],
-                duration: rand(9000, 15000),
-                easing: 'easeInOutSine',
-                complete: function () { setTimeout(fly, rand(1500, 5000)); }
-            });
-        }
-        setTimeout(fly, delay);
-    }
-
-    /* ---------- confetti / honey burst ---------- */
+    /* ---------- bee confetti burst on any click ---------- */
     var fxLayer = null;
     function getFx() {
         if (!fxLayer) {
@@ -142,30 +100,37 @@
         return fxLayer;
     }
 
-    var BITS = ['🐝', '🍯', '✨', '🌼', '🥇'];
     function burst(x, y) {
-        if (reduce || !hasAnime) { return; }
+        if (reduce || !hasAnime || !beeUrl) { return; }
         var layer = getFx();
-        var n = 14;
+        var n = 10 + Math.floor(Math.random() * 4);
         for (var i = 0; i < n; i++) {
-            var bit = document.createElement('span');
+            var bit = document.createElement('img');
             bit.className = 'fx-bit';
-            bit.textContent = BITS[Math.floor(Math.random() * BITS.length)];
+            bit.src = beeUrl;
+            bit.alt = '';
+            var size = 16 + Math.random() * 16;
+            bit.style.width = size + 'px';
+            bit.style.height = 'auto';
             bit.style.left = x + 'px';
             bit.style.top = y + 'px';
             layer.appendChild(bit);
-            var ang = (Math.PI * 2) * (i / n) + rand(-0.3, 0.3);
-            var dist = rand(60, 170);
             (function (node) {
+                var ang = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.5;
+                var speed = 70 + Math.random() * 150;
+                var dx = Math.cos(ang) * speed;
+                var dy = Math.sin(ang) * speed;
                 anime({
                     targets: node,
-                    translateX: Math.cos(ang) * dist,
-                    translateY: [Math.sin(ang) * dist, Math.sin(ang) * dist + rand(60, 140)],
-                    rotate: rand(-220, 220),
-                    scale: [rand(0.8, 1.4), 0],
-                    opacity: [1, 0],
-                    duration: rand(900, 1500),
-                    easing: 'easeOutCubic',
+                    translateX: [0, dx],
+                    translateY: [
+                        { value: dy, duration: 380, easing: 'easeOutQuad' },
+                        { value: dy + 200 + Math.random() * 140, duration: 950, easing: 'easeInQuad' }
+                    ],
+                    rotate: Math.random() * 720 - 360,
+                    scale: [0.3, 1, 0.75],
+                    opacity: [1, 1, 0],
+                    duration: 1250 + Math.random() * 500,
                     complete: function () { node.remove(); }
                 });
             })(bit);
@@ -174,10 +139,7 @@
 
     function setupBurst() {
         document.addEventListener('click', function (e) {
-            var t = e.target.closest('.button, .btn, .btn-honey, .btn-dark, .link-button');
-            if (!t) { return; }
-            var r = t.getBoundingClientRect();
-            burst(r.left + r.width / 2, r.top + r.height / 2);
+            burst(e.clientX, e.clientY);
         });
     }
 
@@ -230,7 +192,6 @@
         setupReveals();
         bobBrand();
         scrollProgress();
-        beeSwarm();
         setupBurst();
         setupMagnetic();
         setupTilt();

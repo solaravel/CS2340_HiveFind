@@ -112,7 +112,7 @@
   <div class="page-header-ico"><i class="bi bi-list-check"></i></div>
   <div>
     <h1>My Applications</h1>
-    <p>Follow every buzz from Applied all the way to Offer.</p>
+    <p>Everywhere you've applied, and where each one stands.</p>
   </div>
 </div>
 
@@ -152,7 +152,7 @@
            data-title="{{ item.app.job.title }}"
            data-company="{{ item.app.job.company }}">
         <button type="button" class="button pack-open-btn">
-          <i class="bi bi-box2-heart-fill"></i> The hive decided &#8212; open your pack!
+          <i class="bi bi-box2-heart-fill"></i> The hive decided. Open your pack!
         </button>
       </div>
       {% endif %}
@@ -161,7 +161,7 @@
   {% empty %}
   <div class="hive-card cart-empty">
     <h2><i class="bi bi-emoji-smile"></i> No applications yet</h2>
-    <p>You haven't applied to any jobs yet &#8212; go find a sweet role!</p>
+    <p>You haven't applied to anything yet. Go find a sweet role.</p>
     <a class="button" href="{% url 'jobs.index' %}">Browse Jobs</a>
   </div>
   {% endfor %}
@@ -232,13 +232,13 @@
         '<img class="result-bee" src="' + beeSrc + '" alt="">' +
         '<h2>OFFER UNLOCKED!</h2>' +
         '<p class="result-role">' + role + '</p>' +
-        '<p class="result-msg">Welcome to the hive &#8212; they want you!</p>';
+        '<p class="result-msg">Welcome to the hive. They want you!</p>';
     }
     return '<div class="result-rarity">KEEP BUZZING</div>' +
       '<img class="result-bee" src="' + beeSrc + '" alt="">' +
       '<h2>Not this time</h2>' +
       '<p class="result-role">' + role + '</p>' +
-      '<p class="result-msg">This flower didn’t bloom &#8212; the right one is out there.</p>';
+      '<p class="result-msg">Not the one. Plenty more flowers out there.</p>';
   }
 
   function confetti(n, accepted) {
