@@ -40,6 +40,12 @@ def show(request, id):
     template_data = {}
     template_data['title'] = job.title
     template_data['job'] = job
+    template_data['is_owner'] = request.user.is_authenticated and job.posted_by_id == request.user.id
+    template_data['recommended_candidates'] = JobSeeker.objects.none()
+    if template_data['is_owner'] and job.skills.exists():
+        template_data['recommended_candidates'] = JobSeeker.objects.filter(
+            is_public=True, skills__in=job.skills.all()
+        ).distinct().prefetch_related('skills')
     return render(request, 'jobs/show.html', {'template_data': template_data})
 
 @login_required
@@ -56,6 +62,19 @@ def create(request):
     else:
         form = JobForm()
     return render(request, 'jobs/create.html', {'form': form})
+
+@login_required
+@permission_required('jobs.add_job', raise_exception=True)
+def edit(request, id):
+    job = get_object_or_404(Job, id=id, posted_by=request.user)
+    if request.method == 'POST':
+        form = JobForm(request.POST, instance=job)
+        if form.is_valid():
+            form.save()
+            return redirect('jobs.show', id=job.id)
+    else:
+        form = JobForm(instance=job)
+    return render(request, 'jobs/edit.html', {'form': form, 'job': job})
 
 def job_search(request):
     jobs = Job.objects.filter(is_active=True)
@@ -107,7 +126,7 @@ def candidate_search(request):
     if query:
         candidates = JobSeeker.objects.filter(
             Q(name__icontains=query) | Q(headline__icontains=query) | Q(skills__name__icontains=query)
-        ).distinct()
+        ).filter(is_public=True).distinct()
     template_data = {
         'query': query,
         'candidates': candidates,

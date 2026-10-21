@@ -68,6 +68,21 @@
           <a href="{% url 'jobs.report_posting' template_data.job.id %}">Report this posting</a>
         {% endif %}
 
+        {% if template_data.is_owner %}
+        <div class="mt-3">
+          <a href="{% url 'jobs.edit' template_data.job.id %}" class="btn btn-dark">Edit this job</a>
+        </div>
+        <h3 class="mt-4">Recommended candidates</h3>
+        {% for candidate in template_data.recommended_candidates %}
+          <div class="card mb-2"><div class="card-body">
+            <a href="{% url 'accounts.view_profile' id=candidate.id %}">{{ candidate.name|default:candidate.user.username }}</a>
+            <div>{% for s in candidate.skills.all %}<span class="badge bg-secondary">{{ s.name }}</span> {% endfor %}</div>
+          </div></div>
+        {% empty %}
+          <p>No matching candidates yet.</p>
+        {% endfor %}
+        {% endif %}
+
 
         <!--{% if user.is_authenticated %}
         <form method="post" action="{% url 'applications.apply' id=template_data.job.id %}" class="mt-2">

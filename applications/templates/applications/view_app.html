@@ -56,6 +56,14 @@
       </select>
       <button type="submit">Update stage</button>
     </form>
+
+    <h2 class="mt-4">Email candidate</h2>
+    <form method="post" action="{% url 'applications.email_candidate' template_data.application.id %}">
+      {% csrf_token %}
+      <p><input type="text" name="subject" placeholder="Subject" class="form-control"></p>
+      <p><textarea name="message" placeholder="Message" class="form-control" rows="4"></textarea></p>
+      <button type="submit">Send email</button>
+    </form>
   </aside>
 </div>
 {% endblock %}

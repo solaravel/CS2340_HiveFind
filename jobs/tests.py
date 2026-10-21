@@ -100,3 +100,52 @@ class JobMapTests(TestCase):
         response = self.client.get(reverse('jobs.candidates'))
         self.assertContains(response, 'New Matches')
         self.assertContains(response, 'Candidate')
+
+
+class RecruiterJobTests(TestCase):
+    def setUp(self):
+        add_job = Permission.objects.get(codename='add_job')
+        self.recruiter = User.objects.create_user(username='rec1', password='pass1234')
+        self.recruiter.user_permissions.add(add_job)
+        self.other = User.objects.create_user(username='rec2', password='pass1234')
+        self.other.user_permissions.add(add_job)
+        self.job = Job.objects.create(
+            title='Backend Dev', company='Acme', latitude=33.7, longitude=-84.3,
+            posted_by=self.recruiter,
+        )
+
+    def test_recruiter_can_edit_own_job(self):
+        self.client.force_login(self.recruiter)
+        response = self.client.post(reverse('jobs.edit', args=[self.job.id]), {
+            'title': 'Senior Backend Dev', 'company': 'Acme', 'description': 'Updated',
+            'latitude': '33.7', 'longitude': '-84.3',
+        })
+        self.assertRedirects(response, reverse('jobs.show', args=[self.job.id]))
+        self.job.refresh_from_db()
+        self.assertEqual(self.job.title, 'Senior Backend Dev')
+
+    def test_recruiter_cannot_edit_others_job(self):
+        self.client.force_login(self.other)
+        response = self.client.get(reverse('jobs.edit', args=[self.job.id]))
+        self.assertEqual(response.status_code, 404)
+
+    def test_owner_sees_recommended_candidates(self):
+        skill = Skill.objects.create(name='Python')
+        self.job.skills.add(skill)
+        seeker_user = User.objects.create_user(username='cand', password='pass1234')
+        candidate = JobSeeker.objects.create(user=seeker_user, name='Casey Candidate')
+        candidate.skills.add(skill)
+        self.client.force_login(self.recruiter)
+        response = self.client.get(reverse('jobs.show', args=[self.job.id]))
+        self.assertContains(response, 'Recommended candidates')
+        self.assertContains(response, 'Casey Candidate')
+
+    def test_candidate_search_excludes_private_profiles(self):
+        pub_user = User.objects.create_user(username='pub', password='pass1234')
+        JobSeeker.objects.create(user=pub_user, name='Alice Public', is_public=True)
+        priv_user = User.objects.create_user(username='priv', password='pass1234')
+        JobSeeker.objects.create(user=priv_user, name='Alice Private', is_public=False)
+        self.client.force_login(self.recruiter)
+        response = self.client.get(reverse('jobs.candidates'), {'query': 'Alice'})
+        self.assertContains(response, 'Alice Public')
+        self.assertNotContains(response, 'Alice Private')

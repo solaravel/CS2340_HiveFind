@@ -3,9 +3,10 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import Group, Permission
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied #throws error if job seeker tries to access candidates page
-from .forms import JobSeekerForm
+from .forms import JobSeekerForm, SignUpForm
 from .models import JobSeeker, Skill
 
 
@@ -13,14 +14,21 @@ def signup(request):
     if request.user.is_authenticated:
         return redirect('home.index')
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            profile = JobSeeker.objects.create(user=user)
+            if form.cleaned_data['role'] == 'recruiter':
+                group, _ = Group.objects.get_or_create(name='Recruiters')
+                group.permissions.add(Permission.objects.get(codename='add_job'))
+                user.groups.add(group)
+            else:
+                seeker_group, _ = Group.objects.get_or_create(name='Seeker')
+                user.groups.add(seeker_group)
+                JobSeeker.objects.create(user=user)
             auth_login(request, user)
             return redirect('home.index')
     else:
-        form = UserCreationForm()
+        form = SignUpForm()
     return render(request, 'accounts/signup.html', {'form': form})
 
 
@@ -44,12 +52,15 @@ def logout(request):
 
 @login_required
 def my_profile(request):
-    profile = get_object_or_404(JobSeeker, user=request.user)
+    profile, _ = JobSeeker.objects.get_or_create(
+        user=request.user, defaults={'name': request.user.username},
+    )
     return redirect('accounts.view_profile', id=profile.id)
 
 
 def view_profile(request, id):
     profile = get_object_or_404(JobSeeker, id=id)
+    can_view = profile.is_public or profile.user == request.user
     template_data = {}
     template_data['title'] = profile.name
     template_data['headline'] = profile.headline
@@ -58,6 +69,7 @@ def view_profile(request, id):
     template_data['work_exp'] = profile.work_exp
     template_data['links'] = profile.links
     template_data['profile_user'] = profile.user
+    template_data['can_view'] = can_view
     return render(request, 'accounts/view_profile.html', {'template_data': template_data})
 
 
@@ -91,9 +103,9 @@ def candidate_search(request):
     skill = request.GET.get('skill', '')
     education = request.GET.get('education', '')
     experience = request.GET.get('experience', '')
-    candidates = JobSeeker.objects.filter(user__groups__name='Seeker')
+    candidates = JobSeeker.objects.filter(user__groups__name='Seeker', is_public=True)
     if name:
-        candidates = candidates.filter(Q(name__icontains=name) | Q(headline_icontains=name))
+        candidates = candidates.filter(Q(name__icontains=name) | Q(headline__icontains=name))
     if skill:
         candidates = candidates.filter(skills__name__icontains=skill)
     if education:

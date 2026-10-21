@@ -6,6 +6,8 @@
 <section class="profile">
 
     <h1>{{ template_data.title }}</h1>
+
+    {% if template_data.can_view %}
     <p class="headline">{{ template_data.headline }}</p>
 
     <h2>Education</h2>
@@ -30,6 +32,9 @@
         <p><a href="{{ template_data.links }}" target="_blank" rel="noopener noreferrer">{{ template_data.links }}</a></p>
     {% else %}
         <p>No links added.</p>
+    {% endif %}
+    {% else %}
+    <p>This profile is private.</p>
     {% endif %}
     {% if template_data.profile_user == user %}
         <li>

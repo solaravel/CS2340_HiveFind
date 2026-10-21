@@ -18,6 +18,9 @@ class JobSeeker(models.Model):
     education = models.TextField(blank=True)
     work_exp = models.TextField(blank=True)
     links = models.URLField(blank=True)
+    is_public = models.BooleanField(default=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
 
 class SavedCandidateSearch(models.Model):

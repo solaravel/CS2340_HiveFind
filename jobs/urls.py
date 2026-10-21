@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('map/', views.job_map, name='jobs.map'),
     path('create/', views.create, name='jobs.create'),
+    path('<int:id>/edit/', views.edit, name='jobs.edit'),
     path('', views.index, name='jobs.index'), ## jobs page that isnt map
     path('api/jobs/', views.jobs_api, name='jobs.api'),
     path('search/', views.job_search, name='jobs.search'),

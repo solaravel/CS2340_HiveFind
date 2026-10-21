@@ -1,0 +1,15 @@
+{% extends 'hivefind/base.html' %}
+
+{% block title %}Edit Job &middot; HiveFind{% endblock %}
+
+{% block content %}
+<section class="auth-form">
+    <h1>Edit Job</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button">Save changes</button>
+        <a href="{% url 'jobs.show' id=job.id %}">Cancel</a>
+    </form>
+</section>
+{% endblock %}
